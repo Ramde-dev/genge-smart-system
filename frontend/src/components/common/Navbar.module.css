@@ -1,0 +1,587 @@
+/* ── Variables ── */
+:root {
+  --primary: #0f3b5c;
+  --primary-light: #1a5a7a;
+  --accent: #d8114c;
+  --gray-50: #f9fafb;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --radius: 1rem;
+  --radius-sm: 0.6rem;
+  --transition: 0.25s ease;
+}
+
+/* ── Navbar ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 1.5rem;
+}
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* ── Left ── */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.menuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition);
+}
+.menuBtn:hover {
+  color: var(--primary);
+}
+.brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--primary);
+  text-decoration: none;
+}
+.brand span {
+  color: var(--accent);
+  font-weight: 300;
+}
+
+/* ── Search ── */
+.searchWrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  background: var(--gray-100);
+  border-radius: 2rem;
+  padding: 0.4rem 1rem;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+}
+.searchWrapper:focus-within {
+  background: #fff;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(26, 90, 122, 0.12);
+}
+.searchIcon {
+  color: var(--gray-400);
+  margin-right: 0.5rem;
+}
+.searchInput {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--gray-700);
+  outline: none;
+}
+.searchInput::placeholder {
+  color: var(--gray-400);
+}
+
+/* ── Desktop Navigation ── */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.navLink:hover {
+  background: var(--gray-100);
+  color: var(--primary);
+}
+.navLink svg {
+  font-size: 1.2rem;
+  color: var(--gray-400);
+}
+.navLink:hover svg {
+  color: var(--primary);
+}
+
+/* ── Right ── */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: all var(--transition);
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  position: relative;
+}
+.iconBtn:hover {
+  color: var(--primary);
+  background: var(--gray-100);
+}
+
+/* ── Notification Bell & Badge ── */
+.notificationWrapper {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+/* ── Notification Dropdown ── */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 380px;
+  max-height: 460px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-200);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--gray-700);
+}
+
+.markAllBtn {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+.markAllBtn:hover {
+  text-decoration: underline;
+}
+
+.dropdownList {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.25rem 0;
+}
+
+.notificationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background var(--transition);
+}
+.notificationItem.unread {
+  background: var(--gray-50);
+  border-left: 3px solid var(--primary);
+}
+.notificationItem:hover {
+  background: var(--gray-50);
+}
+
+.notificationContent {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+.notificationContent strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+.notificationContent p {
+  margin: 0.1rem 0;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+.time {
+  font-size: 0.7rem;
+  color: var(--gray-400);
+}
+
+.markReadBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+  padding: 0.2rem 0.4rem;
+  border-radius: 2rem;
+  transition: background var(--transition);
+}
+.markReadBtn:hover {
+  background: var(--gray-100);
+}
+
+.empty {
+  text-align: center;
+  color: var(--gray-400);
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+.viewAll {
+  display: block;
+  text-align: center;
+  padding: 0.6rem;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  border-top: 1px solid var(--gray-100);
+  transition: background var(--transition);
+}
+.viewAll:hover {
+  background: var(--gray-50);
+}
+
+/* ── Cart Button ── */
+.cartBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: all var(--transition);
+  background: transparent;
+  border: none;
+  text-decoration: none;
+}
+.cartBtn:hover {
+  color: var(--primary);
+  background: var(--gray-100);
+}
+.cartBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+}
+
+/* ── Avatar ── */
+.avatarLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--gray-200);
+  text-decoration: none;
+  transition: all var(--transition);
+  border: 2px solid transparent;
+}
+.avatarLink:hover {
+  border-color: var(--primary);
+}
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatarInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: var(--gray-200);
+}
+
+/* ── MOBILE DRAWER – SOLID & FULL HEIGHT ── */
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  min-height: 100vh;
+  width: 280px;
+  background: #1e5a85;
+  color: #ffffff;
+  padding: 1.5rem 1.25rem;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #1e5a85;
+  opacity: 1;
+}
+.drawerOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.drawerUser {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.drawerAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.drawerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.drawerUserInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.drawerUserName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+.drawerUserEmail {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+.closeBtn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition);
+}
+.closeBtn:hover {
+  color: #fff;
+}
+
+.drawerLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+.drawerLinks a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all var(--transition);
+  border-left: 3px solid transparent;
+}
+.drawerLinks a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-left-color: #d8114c;
+}
+.drawerLinks a svg {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+.drawerLinks a:hover svg {
+  color: #fff;
+}
+
+.drawerLogout {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+.drawerLogout:hover {
+  background: rgba(255, 0, 0, 0.15);
+  color: #fff;
+}
+.drawerLogout svg {
+  color: rgba(255, 255, 255, 0.6);
+}
+.drawerLogout:hover svg {
+  color: #fff;
+}
+
+/* ── Hide drawer on desktop ── */
+@media (min-width: 769px) {
+  .drawer {
+    display: none;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .menuBtn {
+    display: block;
+  }
+  .desktopNav {
+    display: none;
+  }
+  .brand {
+    font-size: 1.25rem;
+  }
+  .searchWrapper {
+    max-width: 180px;
+    padding: 0.3rem 0.75rem;
+  }
+  .searchInput {
+    font-size: 0.85rem;
+  }
+  .cartBadge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+  .container {
+    gap: 0.5rem;
+  }
+  .searchWrapper {
+    max-width: 120px;
+  }
+  .brand {
+    font-size: 1rem;
+  }
+  .brand span {
+    display: none;
+  }
+  .right {
+    gap: 0.25rem;
+  }
+  .iconBtn,
+  .cartBtn {
+    padding: 0.25rem;
+  }
+  .drawer {
+    width: 260px;
+    padding: 1.25rem;
+  }
+  .dropdown {
+    width: min(320px, calc(100vw - 2rem));
+    right: -16px;
+  }
+}

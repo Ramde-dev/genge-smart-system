@@ -1,0 +1,52 @@
+/* ── Layout ── */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+/* ── Main content – takes full remaining height ── */
+.main {
+  flex: 1;
+  padding: 1.5rem 1rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: min(100%, 1280px);
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 1rem 0.75rem;
+  }
+
+  .container {
+    width: 100%;
+  }
+}
+
+/* ── Optional footer ── */
+.footer {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* ── Responsive ── */
+@media (min-width: 640px) {
+  .main {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding: 2.5rem 2rem;
+  }
+}

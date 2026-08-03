@@ -1,0 +1,91 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.markAllBtn {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 2rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.markAllBtn:hover {
+  background: var(--gray-50);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.item.unread {
+  border-left: 4px solid var(--primary);
+  background: var(--gray-50);
+}
+
+.content {
+  flex: 1;
+}
+.content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin: 0 0 0.25rem;
+}
+.content p {
+  margin: 0.2rem 0;
+  color: var(--gray-600);
+}
+.time {
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  display: block;
+}
+.link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+.readBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  padding: 3rem 0;
+  color: var(--gray-400);
+}

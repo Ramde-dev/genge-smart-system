@@ -1,0 +1,557 @@
+/* Container */
+.container {
+    padding: 1.5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.headerLeft {
+    flex: 1;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 0 0 0.25rem 0;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.lastUpdated {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Refresh Button */
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refreshBtn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.refreshBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Stats */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.statCard {
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.statIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.statTotal .statIcon {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.statInProgress .statIcon {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+.statCompleted .statIcon {
+    background: #d1fae5;
+    color: #10b981;
+}
+
+.statInfo {
+    flex: 1;
+}
+
+.statValue {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.2;
+}
+
+.statLabel {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.searchWrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.filterWrapper {
+    position: relative;
+    min-width: 140px;
+}
+
+.filterIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.filterSelect {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    appearance: none;
+    cursor: pointer;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.resultCount {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-left: auto;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem;
+    color: #94a3b8;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Error */
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Empty */
+.empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+}
+
+.emptyIcon {
+    color: #cbd5e1;
+    margin-bottom: 0.75rem;
+}
+
+.empty h3 {
+    margin: 0 0 0.25rem 0;
+    color: #475569;
+}
+
+.empty p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Deliveries */
+.deliveriesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.deliveryCard {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    transition: all 0.2s;
+}
+
+.deliveryCard:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.deliveryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.orderInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.orderId {
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 0.95rem;
+}
+
+.orderDate {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statusAssigned {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.statusPickedUp {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.statusInTransit {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.statusArrived {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.statusCompleted {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.statusDelayed {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.deliveryBody {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.deliveryInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.infoIcon {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.deliveryActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.locationBtn,
+.viewBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.locationBtn {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.locationBtn:hover {
+    background: #dbeafe;
+}
+
+.viewBtn {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.viewBtn:hover {
+    background: #e2e8f0;
+}
+
+/* Timeline */
+.timeline {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.timelineStep {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.timelineDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    transition: all 0.3s;
+}
+
+.timelineActive .timelineDot {
+    background: #3b82f6;
+}
+
+.timelineLabel {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+.timelineActive .timelineLabel {
+    color: #475569;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .statsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .statCard {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .statIcon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .statValue {
+        font-size: 1rem;
+    }
+    
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .searchWrapper,
+    .filterWrapper {
+        width: 100%;
+    }
+    
+    .resultCount {
+        text-align: center;
+        margin-left: 0;
+    }
+    
+    .deliveryBody {
+        flex-direction: column;
+    }
+    
+    .deliveryActions {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .locationBtn,
+    .viewBtn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .timeline {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .timelineStep {
+        flex-direction: row;
+        gap: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        flex: none;
+    }
+    
+    .timelineDot {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .statsGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .refreshBtn {
+        align-self: flex-end;
+    }
+    
+    .deliveryHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

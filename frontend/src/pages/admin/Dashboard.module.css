@@ -1,0 +1,405 @@
+/* ── Variables ── */
+:root {
+  --primary: #0f3b5c;
+  --primary-light: #1a5a7a;
+  --accent: #d8114c;
+  --gray-50: #f9fafb;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --radius: 1rem;
+  --radius-sm: 0.6rem;
+  --transition: 0.25s ease;
+}
+
+/* ── Container ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.2rem;
+}
+.subtitle {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+/* ── Refresh Button ── */
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1.2rem;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.refreshBtn:hover:not(:disabled) {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+.refreshBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lastUpdated {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--gray-400);
+}
+
+/* ── Stats Grid ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.statCard {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all var(--transition);
+}
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+.statIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+.statContent {
+  flex: 1;
+  min-width: 0;
+}
+.statLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gray-400);
+  letter-spacing: 0.04em;
+}
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin: 0;
+  line-height: 1.2;
+}
+.statTrend {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-left: 0.25rem;
+}
+
+.statPrimary .statIcon {
+  background: rgba(15, 59, 92, 0.1);
+  color: var(--primary);
+}
+.statSuccess .statIcon {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+}
+.statDanger .statIcon {
+  background: rgba(216, 17, 76, 0.1);
+  color: var(--accent);
+}
+.statWarning .statIcon {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+}
+
+/* ── Chart Card ── */
+.chartCard {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 2rem;
+}
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+}
+.chartContainer {
+  width: 100%;
+  height: 280px;
+}
+.noChartData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 280px;
+  color: var(--gray-400);
+  font-size: 1rem;
+}
+
+/* ── Smart Features ── */
+.smartGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.smartCard {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+  transition: all var(--transition);
+}
+.smartCard:hover {
+  box-shadow: var(--shadow-md);
+}
+.smartHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.smartIcon {
+  font-size: 1.5rem;
+}
+.smartTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin: 0;
+}
+.smartBody {
+  color: var(--gray-600);
+  font-size: 0.95rem;
+}
+
+/* ── Recommendation List ── */
+.recommendationList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.recommendationItem {
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  background: var(--gray-50);
+}
+.recommendationItem.critical {
+  background: #fef2f2;
+}
+.recommendationItem.high {
+  background: #fffbeb;
+}
+.recommendationItem.medium {
+  background: #eff6ff;
+}
+.noRecommendation {
+  color: var(--gray-500);
+  font-style: italic;
+  list-style: none;
+}
+
+/* ── Seller Analytics ── */
+.sellerAnalytics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.analyticsItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+.analyticsName {
+  font-weight: 500;
+  color: var(--gray-700);
+}
+.analyticsSales {
+  color: var(--primary);
+  font-weight: 600;
+}
+.analyticsRating {
+  color: #f59e0b;
+}
+
+/* ── Fraud Status ── */
+.fraudStatus p {
+  margin: 0.2rem 0;
+}
+.fraudBar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+.fraudProgress {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+.fraudLabel {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+/* ── Recent Activity ── */
+.recentActivity {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+}
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.activityItem {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.95rem;
+  color: var(--gray-600);
+}
+.activityItem:last-child {
+  border-bottom: none;
+}
+.activityTime {
+  color: var(--gray-400);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.noActivity {
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* ── States ── */
+.loadingState,
+.errorState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--gray-500);
+  font-size: 1.1rem;
+}
+.spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 0.75rem;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.errorState {
+  color: var(--accent);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .smartGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0;
+  }
+  .title {
+    font-size: 1.5rem;
+  }
+  .smartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .statValue {
+    font-size: 1.25rem;
+  }
+  .chartContainer {
+    height: 200px;
+  }
+  .noChartData {
+    height: 200px;
+  }
+  .activityItem {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

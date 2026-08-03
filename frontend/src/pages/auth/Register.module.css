@@ -1,0 +1,279 @@
+/* ── Variables (consistent with seller pages) ── */
+:root {
+  --primary: #0f3b5c;
+  --primary-light: #1a5a7a;
+  --accent: #d8114c;
+  --accent-hover: #b80e40;
+  --gray-50: #f9fafb;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --radius: 1rem;
+  --radius-sm: 0.6rem;
+  --transition: 0.25s ease;
+}
+
+/* ── Page Layout ── */
+.pageContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-50);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding: 1.5rem;
+}
+
+/* ── Card ── */
+.card {
+  background: #ffffff;
+  padding: 2.5rem 2.5rem 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-200);
+  max-width: 440px;
+  width: 100%;
+  transition: box-shadow var(--transition);
+}
+
+.card:hover {
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+/* ── Brand ── */
+.brand {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--primary) 60%, var(--primary-light));
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1.5rem;
+  background-clip: text;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+/* ── Role Toggle ── */
+.roleToggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+  background: var(--gray-100);
+}
+
+.roleBtn {
+  flex: 1;
+  padding: 0.6rem 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.roleBtnActive {
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.roleCheck {
+  color: var(--accent);
+}
+
+/* ── Form ── */
+.inputGroup {
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  background: #fff;
+  transition: all var(--transition);
+  color: var(--gray-700);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(26, 90, 122, 0.12);
+}
+
+.inputError {
+  border-color: var(--accent) !important;
+}
+.inputError:focus {
+  box-shadow: 0 0 0 4px rgba(216, 17, 76, 0.12);
+}
+
+.input:disabled {
+  background: var(--gray-50);
+  cursor: not-allowed;
+}
+
+.eyeToggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition);
+}
+.eyeToggle:hover {
+  color: var(--gray-600);
+}
+.eyeToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-top: 0.25rem;
+}
+
+/* ── Submit Button ── */
+.submitBtn {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 10px rgba(216, 17, 76, 0.25);
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(216, 17, 76, 0.35);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-100);
+}
+
+.link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.link:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .card {
+    padding: 1.5rem 1.25rem;
+  }
+  .brand {
+    font-size: 1.75rem;
+  }
+  .roleBtn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0;
+  }
+}
