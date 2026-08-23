@@ -1,9 +1,16 @@
+import { useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 export default function ProtectedRoute({ roleRequired }) {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [currentTime] = useState(() => Date.now());
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem('user') || '{}');
+  } catch (error) {
+    console.warn('Could not parse stored user:', error);
+  }
   const location = useLocation();
 
   // ── Debug logs (remove in production) ──
@@ -20,19 +27,22 @@ export default function ProtectedRoute({ roleRequired }) {
   }
 
   // 2. Check if token is expired
+  let tokenExpired = false;
   try {
     const tokenData = JSON.parse(atob(token.split('.')[1]));
-    if (tokenData.exp && tokenData.exp * 1000 < Date.now()) {
-      console.log("Token expired, redirecting to login");
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('agentId');
-      return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+    tokenExpired = Boolean(tokenData.exp && tokenData.exp * 1000 < currentTime);
   } catch (err) {
     console.warn("Could not parse token:", err);
+  }
+
+  if (tokenExpired) {
+    console.log("Token expired, redirecting to login");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('agentId');
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // 3. Role Check (case-insensitive)

@@ -13,7 +13,11 @@ const authenticateToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_super_secret_key');
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not configured');
+            return res.status(503).json({ success: false, message: 'Authentication service is unavailable' });
+        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         req.userId = decoded.id || decoded.userId;
         next();

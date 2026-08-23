@@ -16,6 +16,7 @@ import {
   HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineRefresh,
+  HiOutlineXCircle,
 } from 'react-icons/hi';
 import SearchFilterBar from '../../components/seller/SearchFilterBar';
 
@@ -165,7 +166,7 @@ export default function ProductManage() {
 
         {error && (
           <div className={styles.errorBanner}>
-            <span>❌ {error}</span>
+                        <span><HiOutlineXCircle aria-hidden="true" /> {error}</span>
             <button onClick={() => setError(null)} className={styles.closeError}>×</button>
           </div>
         )}

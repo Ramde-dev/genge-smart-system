@@ -6,7 +6,6 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 let notificationController;
 try {
     notificationController = require('../controllers/notificationController');
-    console.log('Notification controller loaded successfully');
 } catch (err) {
     console.error('❌ Error loading notificationController:', err.message);
     notificationController = {};

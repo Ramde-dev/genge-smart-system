@@ -35,6 +35,8 @@ export default function AgentLayout({ children }) {
     { label: 'Dashboard', path: '/agent/dashboard', icon: <HiOutlineHome size={22} /> },
     { label: 'My Deliveries', path: '/agent/deliveries', icon: <HiOutlineClipboardList size={22} /> },
     { label: 'Update Location', path: '/agent/update-location', icon: <HiOutlineLocationMarker size={22} /> },
+    { label: 'Profile', path: '/agent/profile', icon: <HiOutlineUserCircle size={22} /> },
+    { label: 'Notifications', path: '/agent/notifications', icon: <HiOutlineClipboardList size={22} /> },
   ];
 
   const isDesktop = () => window.innerWidth >= 768;

@@ -43,6 +43,11 @@ router.get('/quality-scores', adminController.getQualityScores);
 // ── Reports ──
 router.get('/reports', adminController.getReports);
 router.post('/reports/generate', adminController.generateReport);
+router.get('/reports/:reportId/download', adminController.downloadReport);
+
+// Seller payouts
+router.get('/payouts', adminController.getPayouts);
+router.put('/payouts/:payoutId/pay', adminController.paySellerPayout);
 
 // ── Admin Settings ──
 router.get('/settings', (req, res) => {

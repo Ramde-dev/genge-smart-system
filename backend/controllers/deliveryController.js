@@ -1,17 +1,5 @@
 const pool = require('../config/db');
-
-// ── Helper: Create notification ──
-const createNotification = async (userId, type, title, message, link = null) => {
-    try {
-        await pool.query(
-            `INSERT INTO notifications (user_id, type, title, message, link) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [userId, type, title, message, link]
-        );
-    } catch (err) {
-        console.error('Failed to create notification:', err);
-    }
-};
+const { createNotification } = require('./notificationController');
 
 // ── 1. Admin: Get all agents ──
 exports.getAgents = async (req, res) => {
@@ -118,7 +106,9 @@ exports.assignDelivery = async (req, res) => {
             [orderId]
         );
 
+        let deliveryId;
         if (existing.length > 0) {
+            deliveryId = existing[0].id;
             await pool.query(
                 `UPDATE deliveries 
                  SET agent_id = ?, status = 'assigned' 
@@ -126,11 +116,12 @@ exports.assignDelivery = async (req, res) => {
                 [agentId, orderId]
             );
         } else {
-            await pool.query(
+            const [deliveryResult] = await pool.query(
                 `INSERT INTO deliveries (order_id, agent_id, status) 
                  VALUES (?, ?, 'assigned')`,
                 [orderId, agentId]
             );
+            deliveryId = deliveryResult.insertId;
         }
 
         // Update order agent_id to the assigned delivery agent's user account,
@@ -168,7 +159,11 @@ exports.assignDelivery = async (req, res) => {
             `/buyer/tracking/${orderId}`
         );
 
-        res.json({ message: 'Delivery assigned successfully' });
+        res.json({
+            message: 'Delivery assigned successfully',
+            delivery_id: deliveryId,
+            order_id: orderId
+        });
     } catch (err) {
         console.error('Assign delivery error:', err);
         res.status(500).json({ message: 'Server error' });

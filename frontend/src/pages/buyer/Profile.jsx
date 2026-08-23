@@ -157,7 +157,6 @@ export default function Profile() {
         <main className={styles.main}>
           <div className={styles.header}>
             <h1 className={styles.title}>My Profile</h1>
-            <p className={styles.subtitle}>Manage your personal information</p>
           </div>
 
           <form onSubmit={handleSave} className={styles.form}>

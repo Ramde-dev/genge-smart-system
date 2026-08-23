@@ -24,4 +24,25 @@ const sendStatusUpdateEmail = async (email, orderId, status) => {
   }
 };
 
-module.exports = { sendStatusUpdateEmail };
+const sendNotificationEmail = async (email, title, message, link = null) => {
+  if (!email || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
+  try {
+    const actionUrl = link ? `${process.env.CLIENT_URL || 'http://localhost:5173'}${link}` : null;
+    const text = actionUrl ? `${message}\n\nTake action: ${actionUrl}` : message;
+    const actionButton = actionUrl
+      ? `<p><a href="${actionUrl}" style="display:inline-block;padding:10px 16px;background:#ff6a00;color:#fff;text-decoration:none;border-radius:4px">Open in GengeSmart</a></p>`
+      : '';
+    await transporter.sendMail({
+      from: '"Genge Smart System" <noreply@genge.com>',
+      to: email,
+      subject: title,
+      text,
+      html: `<h2>${title}</h2><p>${message}</p>${actionButton}`
+    });
+    console.log(`Notification email sent to ${email}`);
+  } catch (error) {
+    console.error('Notification email error:', error.message);
+  }
+};
+
+module.exports = { sendStatusUpdateEmail, sendNotificationEmail };

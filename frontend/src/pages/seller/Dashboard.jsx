@@ -15,6 +15,8 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineClock,
   HiOutlineTruck,
+  HiOutlineXCircle,
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 
 export default function Dashboard() {
@@ -123,7 +125,7 @@ export default function Dashboard() {
         {/* Error Message */}
         {error && (
           <div className={styles.errorBanner}>
-            <span>❌ {error}</span>
+            <span><HiOutlineXCircle aria-hidden="true" /> {error}</span>
             <button onClick={() => setError(null)} className={styles.closeError}>×</button>
           </div>
         )}
@@ -246,7 +248,7 @@ export default function Dashboard() {
         {data.low_stock_products && data.low_stock_products.length > 0 && (
           <div className={styles.tableCard}>
             <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>⚠️ Low Stock Products</h3>
+              <h3 className={styles.cardTitle}><HiOutlineExclamationCircle aria-hidden="true" /> Low Stock Products</h3>
               <button
                 onClick={() => navigate('/seller/inventory')}
                 className={styles.viewAllBtn}

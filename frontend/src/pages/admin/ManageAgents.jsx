@@ -246,7 +246,7 @@ export default function ManageAgents() {
                 {/* Error */}
                 {error && (
                     <div className={styles.errorBanner}>
-                        <span>❌ {error}</span>
+                        <span><HiOutlineXCircle aria-hidden="true" /> {error}</span>
                         <button onClick={() => setError(null)} className={styles.closeError}>×</button>
                     </div>
                 )}

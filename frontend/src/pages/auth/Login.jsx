@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { HiEye, HiEyeOff, HiLockClosed, HiMail } from 'react-icons/hi';
+import { useUser } from '../../context/UserContext';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -10,6 +11,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAuthenticatedUser } = useUser();
 
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -58,6 +60,7 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userName', user.name);
+      setAuthenticatedUser(user);
 
       // Store agentId if user is an agent
       if (user.role === 'agent' && user.agentId) {
@@ -88,6 +91,7 @@ export default function Login() {
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('userRole', user.role);
           localStorage.setItem('userName', user.name);
+          setAuthenticatedUser(user);
           
           // Store agentId if available
           if (user.agentId) {

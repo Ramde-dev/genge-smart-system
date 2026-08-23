@@ -213,7 +213,7 @@ export default function AdminDashboard() {
                   <div key={idx} className={styles.analyticsItem}>
                     <span className={styles.analyticsName}>{seller.name}</span>
                     <span className={styles.analyticsSales}>TSh {seller.sales.toLocaleString()}</span>
-                    <span className={styles.analyticsRating}>★ {seller.rating.toFixed(1)}</span>
+                    <span className={styles.analyticsRating}><HiOutlineStar /> {seller.rating.toFixed(1)}</span>
                   </div>
                 ))
               )}

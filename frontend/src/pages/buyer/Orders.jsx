@@ -60,7 +60,6 @@ export default function Orders() {
       <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>My Orders</h1>
-          <p className={styles.subtitle}>Track and manage all your orders</p>
         </header>
 
         {loading ? (
@@ -74,7 +73,6 @@ export default function Orders() {
           <div className={styles.emptyState}>
             <HiOutlineClock size={48} className={styles.emptyIcon} />
             <p>No orders yet</p>
-            <span>Your orders will appear here once you start shopping.</span>
           </div>
         ) : (
           <div className={styles.ordersList}>
@@ -96,9 +94,10 @@ export default function Orders() {
                   {order.items?.map((item) => (
                     <div key={item.id} className={styles.orderItem}>
                       <img
-                        src={item.image_url || '/images/placeholder.png'}
+                        src={item.imageUrl || '/images/placeholder.png'}
                         alt={item.name}
                         className={styles.itemImage}
+                        onError={(event) => { event.currentTarget.src = '/images/placeholder.png'; }}
                       />
                       <div className={styles.itemDetails}>
                         <h4 className={styles.itemName}>{item.name}</h4>

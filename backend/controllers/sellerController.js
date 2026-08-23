@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { createNotification } = require('./notificationController');
 
 // ── 1. SELLER DASHBOARD ──
 exports.getDashboard = async (req, res) => {
@@ -480,17 +481,14 @@ exports.updateOrderStatus = async (req, res) => {
             'cancelled': 'Your order has been cancelled'
         };
 
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             orderCheck[0].buyer_id,
-            orderId,
+            'order',
             `Order #${orderId} Updated`,
             statusMessages[status] || `Order status updated to: ${status}`,
-            'order'
-        ]);
+            `/buyer/orders/${orderId}`,
+            orderId
+        );
 
         res.json({
             success: true,
@@ -613,30 +611,24 @@ exports.assignAgent = async (req, res) => {
         `, [orderId, agentId]);
 
         // Notify buyer
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             orderCheck[0].buyer_id,
-            orderId,
+            'order',
             '✅ Delivery Agent Assigned',
             `Your order #${orderId} has been assigned to ${agentCheck[0].name} for delivery. You can track your order in real-time.`,
-            'order'
-        ]);
+            `/buyer/tracking/${orderId}`,
+            orderId
+        );
 
         // Notify agent
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             agentId,
-            orderId,
+            'order',
             '📦 New Delivery Assignment',
             `You have been assigned to deliver order #${orderId}. Please check your dashboard for details.`,
-            'order'
-        ]);
+            `/agent/delivery/${orderId}`,
+            orderId
+        );
 
         res.json({
             success: true,

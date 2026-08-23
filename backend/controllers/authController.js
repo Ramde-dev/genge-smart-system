@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // ── Register a new user ──
 exports.register = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     try {
         // Validate input
@@ -30,11 +30,17 @@ exports.register = async (req, res) => {
         if (!['buyer', 'seller', 'admin', 'agent'].includes(userRole)) {
             userRole = 'buyer';
         }
+        if (userRole === 'seller' && (!phone || !phone.trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Phone number is required for seller registration'
+            });
+        }
 
         // Insert user with status 'active' by default
         await pool.query(
-            'INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)',
-            [name, email, hashedPassword, userRole, 'active']
+            'INSERT INTO users (name, email, password, role, phone, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, email, hashedPassword, userRole, phone?.trim() || null, 'active']
         );
 
         res.status(201).json({ 
@@ -97,7 +103,7 @@ exports.login = async (req, res) => {
         // Generate token with user id and role from database
         const token = jwt.sign(
             { id: user.id, role: user.role },
-            process.env.JWT_SECRET || 'your_super_secret_key',
+            process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
@@ -183,7 +189,7 @@ exports.agentLogin = async (req, res) => {
                 role: user.role,
                 agentId: user.agent_id || null
             },
-            process.env.JWT_SECRET || 'your_super_secret_key',
+            process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
@@ -309,6 +315,13 @@ exports.getAgentProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     const { name, phone, address, shopName, bio } = req.body;
     try {
+        if (['seller', 'Seller'].includes(req.user.role) && (!phone || !phone.trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Seller phone number is required for receiving payments'
+            });
+        }
+
         const updates = [];
         const values = [];
 

@@ -1,0 +1,51 @@
+.footer {
+  padding: 3.5rem 5% 1.2rem;
+  background: #162b40;
+  color: #c8d5de;
+}
+
+.footerTop {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.footerBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  color: #fff;
+  font-size: 1.3rem;
+  .footerTop { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 2.5rem; max-width: 1240px; margin: 0 auto; }
+  text-decoration: none;
+}
+
+.footerBrand span { color: #ff8a45; }
+.footerTop p { max-width: 250px; color: #9fb0bc; font-size: .85rem; line-height: 1.6; }
+  .footerTop p { max-width: 250px; color: #c8d5de; font-size: .875rem; line-height: 1.7; }
+  .footerTop > div:not(:first-child) { display: grid; align-content: start; gap: .75rem; }
+  .footer h3 { margin: 0 0 .35rem; color: #fff; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
+  .footer a { display: inline-flex; align-items: center; gap: .45rem; color: #c8d5de; font-size: .875rem; font-weight: 500; line-height: 1.45; text-decoration: none; }
+.footer h3 { margin: 0 0 1rem; color: #ff8a45; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
+  .footerTop a svg { width: 1rem; height: 1rem; color: #fff; flex: 0 0 auto; }
+.footer a:hover { color: #fff; }
+.footerTop a svg { margin-right: .4rem; }
+.footerBottom { display: flex; justify-content: space-between; max-width: 1240px; margin: 2.5rem auto 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.15); color: #9fb0bc; font-size: .75rem; }
+
+.compact { padding: .85rem 1rem; }
+.compactInner { display: flex; justify-content: center; gap: .75rem; max-width: 1240px; margin: 0 auto; color: #9fb0bc; font-size: .75rem; }
+
+@media (max-width: 900px) {
+  .footerTop { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .footer { padding: 2.5rem 1rem 1rem; }
+  .footerTop { grid-template-columns: 1fr 1fr; gap: 2rem 1rem; }
+  .footerTop > div:first-child { grid-column: 1 / -1; }
+  .footerBottom { display: block; }
+  .footerBottom span { display: block; margin-top: .5rem; }
+  .compactInner { display: block; line-height: 1.6; text-align: center; }
+}

@@ -237,11 +237,12 @@ export default function Dashboard() {
                             const steps = getStatusSteps(delivery.status);
                             
                             return (
-                                <div key={delivery.id || delivery.delivery_id} className={styles.deliveryCard}>
+                                <div key={delivery.id} className={styles.deliveryCard}>
                                     {/* Header */}
                                     <div className={styles.deliveryHeader}>
                                         <div className={styles.orderInfo}>
                                             <span className={styles.orderId}>#{delivery.order_id}</span>
+                                            <span className={styles.deliveryId}>Delivery ID: {delivery.id}</span>
                                             <span className={styles.orderDate}>
                                                 <HiOutlineCalendar size={14} />
                                                 {formatDate(delivery.created_at)}
@@ -273,14 +274,14 @@ export default function Dashboard() {
                                         <div className={styles.deliveryActions}>
                                             <button
                                                 className={styles.locationBtn}
-                                                onClick={() => navigate(`/agent/update-location?deliveryId=${delivery.id || delivery.delivery_id}`)}
+                                                onClick={() => navigate(`/agent/update-location?deliveryId=${delivery.id}`)}
                                             >
                                                 <HiOutlineLocationMarker size={16} />
                                                 Update
                                             </button>
                                             <button
                                                 className={styles.viewBtn}
-                                                onClick={() => navigate(`/agent/delivery/${delivery.order_id}`)}
+                                                onClick={() => navigate(`/agent/delivery/${delivery.id}`)}
                                             >
                                                 <HiOutlineEye size={16} />
                                                 Details

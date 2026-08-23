@@ -6,7 +6,6 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 let agentController;
 try {
     agentController = require('../controllers/agentController');
-    console.log(' Agent controller loaded successfully');
 } catch (err) {
     console.error('❌ Error loading agentController:', err.message);
     agentController = {};

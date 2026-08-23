@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  HiOutlineShoppingBag,
-  HiOutlineHome,
+  HiOutlineShoppingCart,
   HiOutlineUserCircle,
   HiSearch,
   HiMenu,
   HiX,
-  HiOutlineTruck,
-  HiOutlineClipboardList,
   HiBell,
-  HiOutlineUser,
   HiOutlineLogout,
   HiOutlineCheck,
 } from 'react-icons/hi';
@@ -24,6 +20,7 @@ export default function Navbar({ onSearch }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchValue, setSearchValue] = useState('');
   const dropdownRef = useRef(null);
 
   const { cart } = useCart();
@@ -48,7 +45,7 @@ export default function Navbar({ onSearch }) {
     try {
       const res = await api.get('/buyer/notifications/unread-count');
       setUnreadCount(res.data.count);
-    } catch (err) {
+    } catch {
       // ignore
     }
   };
@@ -57,18 +54,24 @@ export default function Navbar({ onSearch }) {
     try {
       const res = await api.get('/buyer/notifications');
       setNotifications(res.data);
-    } catch (err) {
+    } catch {
       // ignore
     }
   };
 
   useEffect(() => {
-    fetchUnreadCount();
-    fetchNotifications();
+    if (!localStorage.getItem('token')) return undefined;
+    const initialFetch = setTimeout(() => {
+      fetchUnreadCount();
+      fetchNotifications();
+    }, 0);
 
     // Refresh count every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+    };
   }, []);
 
   // ── Click outside to close dropdown ──
@@ -90,7 +93,7 @@ export default function Navbar({ onSearch }) {
         n.id === id ? { ...n, is_read: true } : n
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (err) {
+    } catch {
       // ignore
     }
   };
@@ -101,7 +104,7 @@ export default function Navbar({ onSearch }) {
       await api.put('/buyer/notifications/read-all');
       setNotifications(notifications.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
-    } catch (err) {
+    } catch {
       // ignore
     }
   };
@@ -129,15 +132,17 @@ export default function Navbar({ onSearch }) {
   };
 
   const navLinks = [
-    { to: '/buyer/home', label: 'Home', icon: <HiOutlineHome /> },
-    { to: '/buyer/orders', label: 'Orders', icon: <HiOutlineClipboardList /> },
-    { to: '/buyer/tracking', label: 'Tracking', icon: <HiOutlineTruck /> },
-    { to: '/buyer/cart', label: 'Cart', icon: <HiOutlineShoppingBag /> },
-    { to: '/buyer/profile', label: 'Profile', icon: <HiOutlineUser /> },
+    { to: '/buyer/home', label: 'Home' },
+    { to: '/buyer/orders', label: 'Orders' },
+    { to: '/buyer/tracking', label: 'Tracking' },
+    { to: '/buyer/addresses', label: 'Addresses' },
+    { to: '/buyer/notifications', label: 'Notifications' },
+    { to: '/buyer/cart', label: 'Cart' },
+    { to: '/buyer/profile', label: 'Profile' },
   ];
 
   const desktopLinks = navLinks.filter(
-    (link) => link.label !== 'Cart' && link.label !== 'Profile'
+    (link) => !['Cart', 'Profile', 'Notifications'].includes(link.label)
   );
 
   return (
@@ -152,21 +157,10 @@ export default function Navbar({ onSearch }) {
           </Link>
         </div>
 
-        <div className={styles.searchWrapper}>
-          <HiSearch className={styles.searchIcon} size={20} />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Search products..."
-            onChange={(e) => onSearch(e.target.value)}
-          />
-        </div>
-
         <div className={styles.desktopNav}>
           {desktopLinks.map((link) => (
             <Link key={link.to} to={link.to} className={styles.navLink}>
-              {link.icon}
-              <span>{link.label}</span>
+              {link.label}
             </Link>
           ))}
         </div>
@@ -231,13 +225,42 @@ export default function Navbar({ onSearch }) {
           </div>
 
           <Link to="/buyer/cart" className={styles.cartBtn}>
-            <HiOutlineShoppingBag size={24} />
+            <HiOutlineShoppingCart size={25} />
             {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
           </Link>
 
           <Link to="/buyer/profile" className={styles.avatarLink}>
             {renderAvatar()}
           </Link>
+        </div>
+      </div>
+      <div className={styles.searchRow}>
+        <div className={styles.searchWrapper}>
+          <HiSearch className={styles.searchIcon} size={20} />
+          <input
+            type="search"
+            className={styles.searchInput}
+            placeholder="Search products, categories, and sellers"
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              onSearch?.(e.target.value);
+            }}
+            aria-label="Search products"
+          />
+          {searchValue && (
+            <button
+              type="button"
+              className={styles.searchClearBtn}
+              onClick={() => {
+                setSearchValue('');
+                onSearch?.('');
+              }}
+              aria-label="Clear product search"
+            >
+              <HiX aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -265,7 +288,7 @@ export default function Navbar({ onSearch }) {
         <div className={styles.drawerLinks}>
           {navLinks.map((link) => (
             <Link key={link.to} to={link.to} onClick={() => setIsOpen(false)}>
-              {link.icon} {link.label}
+              {link.label}
             </Link>
           ))}
         </div>

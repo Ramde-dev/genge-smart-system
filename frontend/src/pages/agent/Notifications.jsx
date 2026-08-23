@@ -10,7 +10,7 @@ export default function AgentNotifications() {
     const fetchNotifications = async () => {
       try {
         const res = await api.get('/agent/notifications');
-        setNotifications(res.data || []);
+        setNotifications(res.data?.notifications || res.data || []);
       } catch (error) {
         console.error('Error fetching notifications:', error);
       } finally {

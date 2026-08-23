@@ -1,47 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import BuyerLayout from './BuyerLayout';
+import api from '../../services/api';
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineHome, HiOutlineOfficeBuilding, HiOutlineCheck } from 'react-icons/hi';
 import styles from './Addresses.module.css';
 
 export default function Addresses() {
   const [errors, setErrors] = useState({});
 
-  // ── Mock data (replace with API later) ──
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: 'Home',
-      fullName: 'Rama S',
-      phone: '+255 700 000 000',
-      address: '123 Main Street',
-      city: 'Dar es Salaam',
-      region: 'Kinondoni',
-      postalCode: '14111',
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: 'Office',
-      fullName: 'Rama S',
-      phone: '+255 700 000 001',
-      address: '456 Business Park',
-      city: 'Dar es Salaam',
-      region: 'Ilala',
-      postalCode: '12102',
-      isDefault: false,
-    },
-    {
-      id: 3,
-      name: 'Farm',
-      fullName: 'Rama S',
-      phone: '+255 700 000 002',
-      address: '789 Rural Road',
-      city: 'Morogoro',
-      region: 'Morogoro Urban',
-      postalCode: '67101',
-      isDefault: false,
-    },
-  ]);
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [requestError, setRequestError] = useState('');
+
+  useEffect(() => {
+    api.get('/buyer/addresses')
+      .then(({ data }) => setAddresses(data))
+      .catch(() => setRequestError('Failed to load addresses.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -78,17 +53,23 @@ export default function Addresses() {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this address?')) return;
+    try {
+      await api.delete(`/buyer/addresses/${id}`);
       setAddresses(addresses.filter(a => a.id !== id));
+    } catch {
+      setRequestError('Failed to delete address.');
     }
   };
 
-  const handleSetDefault = (id) => {
-    setAddresses(addresses.map(a => ({
-      ...a,
-      isDefault: a.id === id,
-    })));
+  const handleSetDefault = async (id) => {
+    try {
+      await api.put(`/buyer/addresses/${id}/default`);
+      setAddresses(addresses.map(a => ({ ...a, isDefault: a.id === id })));
+    } catch {
+      setRequestError('Failed to update default address.');
+    }
   };
 
   const validateAddress = () => {
@@ -108,7 +89,7 @@ export default function Addresses() {
     else if (trimmedFullName.length < 2) nextErrors.fullName = 'Full name must be at least 2 characters';
 
     if (!trimmedPhone) nextErrors.phone = 'Phone number is required';
-    else if (!/^\+?[0-9\s\-()]{7,}$/.test(trimmedPhone)) nextErrors.phone = 'Enter a valid phone number';
+    else if (!/^\+?[0-9\s()-]{7,}$/.test(trimmedPhone)) nextErrors.phone = 'Enter a valid phone number';
 
     if (!trimmedAddress) nextErrors.address = 'Address line is required';
     else if (trimmedAddress.length < 5) nextErrors.address = 'Address line must be at least 5 characters';
@@ -119,7 +100,7 @@ export default function Addresses() {
     if (!trimmedRegion) nextErrors.region = 'Region is required';
     else if (trimmedRegion.length < 2) nextErrors.region = 'Region must be at least 2 characters';
 
-    if (trimmedPostal && !/^[A-Za-z0-9\-]{4,10}$/.test(trimmedPostal)) {
+    if (trimmedPostal && !/^[A-Za-z0-9-]{4,10}$/.test(trimmedPostal)) {
       nextErrors.postalCode = 'Postal code must be 4-10 characters';
     }
 
@@ -127,21 +108,29 @@ export default function Addresses() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateAddress()) return;
-
-    if (editingId) {
-      setAddresses(addresses.map(a =>
-        a.id === editingId ? { ...formData, id: editingId } : a
-      ));
-    } else {
-      const newId = Math.max(...addresses.map(a => a.id), 0) + 1;
-      setAddresses([...addresses, { ...formData, id: newId }]);
+    try {
+      const response = editingId
+        ? await api.put(`/buyer/addresses/${editingId}`, formData)
+        : await api.post('/buyer/addresses', formData);
+      const savedAddress = response.data;
+      setAddresses(current => {
+        const next = editingId
+          ? current.map(address => address.id === editingId ? savedAddress : address)
+          : [...current, savedAddress];
+        return savedAddress.isDefault
+          ? next.map(address => ({ ...address, isDefault: address.id === savedAddress.id }))
+          : next;
+      });
+      setShowForm(false);
+      setEditingId(null);
+      setErrors({});
+      setRequestError('');
+    } catch (error) {
+      setRequestError(error.response?.data?.message || 'Failed to save address.');
     }
-    setShowForm(false);
-    setEditingId(null);
-    setErrors({});
   };
 
   const handleCancel = () => {
@@ -161,10 +150,10 @@ export default function Addresses() {
   return (
     <BuyerLayout>
       <div className={styles.container}>
+        {requestError && <div className={styles.errorText}>{requestError}</div>}
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>My Addresses</h1>
-            <p className={styles.subtitle}>Manage your shipping addresses</p>
           </div>
           <button className={styles.addBtn} onClick={handleAdd}>
             <HiOutlinePlus /> Add Address
@@ -172,7 +161,7 @@ export default function Addresses() {
         </header>
 
         {/* Default Address */}
-        {getDefaultAddress() && (
+        {!loading && getDefaultAddress() && (
           <div className={styles.defaultSection}>
             <h3 className={styles.sectionTitle}>Default Address</h3>
             <AddressCard
@@ -186,7 +175,7 @@ export default function Addresses() {
         )}
 
         {/* Other Addresses */}
-        {otherAddresses.length > 0 && (
+        {!loading && otherAddresses.length > 0 && (
           <div className={styles.otherSection}>
             <h3 className={styles.sectionTitle}>Other Addresses</h3>
             <div className={styles.addressGrid}>
@@ -204,7 +193,7 @@ export default function Addresses() {
           </div>
         )}
 
-        {addresses.length === 0 && (
+        {!loading && addresses.length === 0 && (
           <div className={styles.emptyState}>
             <HiOutlineHome size={48} className={styles.emptyIcon} />
             <p>No addresses saved yet</p>

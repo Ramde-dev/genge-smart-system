@@ -16,8 +16,15 @@ const adminRoutes = require('./routes/adminRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
 const agentRoutes = require('./routes/agentRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
+const chatRoutes = require('./routes/chat.routes');
+const ensureTables = require('./database/ensureTables');
+const rateLimit = require('./middleware/rateLimit');
 
 const app = express();
+
+if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET must be configured before starting the API');
+}
 
 const allowedOrigins = [
     process.env.CLIENT_URL || 'http://localhost:5173',
@@ -39,33 +46,34 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'same-origin');
+    next();
+});
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use((req, res, next) => {
-    const start = Date.now();
-    res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`);
-    });
-    next();
-});
-
 // ── MOUNT ROUTES ──
-app.use('/api/auth', authRoutes);
-// Mount dashboard routes first so they can provide /api/seller/dashboard
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 30, message: 'Too many authentication attempts. Please try again later.' }), authRoutes);
+// Mount buyer routes before the authenticated dashboard router so public catalog routes work.
+app.use('/api/buyer/notifications', notificationRoutes);
+app.use('/api/agent/notifications', notificationRoutes);
+app.use('/api/buyer', buyerRoutes);
+// Dashboard routes apply authentication to every request entering their router.
 app.use('/api', dashboardRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/seller/analytics', analyticsRoutes); // mount analytics on its exact base path
 app.use('/api/seller', orderRoutes);
 app.use('/api/seller', productRoutes);
-app.use('/api/buyer/notifications', notificationRoutes);
-app.use('/api/buyer', buyerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/tracking', trackingRoutes);
+app.use('/api/chat', rateLimit({ windowMs: 60 * 1000, max: 30, message: 'Too many chat requests. Please wait a moment.' }), chatRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -90,8 +98,8 @@ app.use((err, req, res, next) => {
             time: new Date().toISOString(),
             method: req.method,
             url: req.originalUrl,
-            headers: req.headers,
-            body: req.body,
+            headers: { ...req.headers, authorization: '[REDACTED]' },
+            body: '[REDACTED]',
             error: err.stack || err.message || err
         };
         fs.appendFileSync('request-error.log', JSON.stringify(logEntry, null, 2) + '\n---\n');
@@ -108,22 +116,11 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log('========================================');
-    console.log('Genge Smart System API');
-    console.log('========================================');
-    console.log(`Server running on port ${PORT}`);
-    console.log(`http://localhost:${PORT}`);
-    console.log('========================================');
-    console.log('Routes mounted:');
-    console.log('  /api/auth');
-    console.log('  /api/seller');
-    console.log('  /api/buyer');
-    console.log('  /api/admin');
-    console.log('  /api/delivery');
-    console.log('  /api/agent');
-    console.log('  /api/tracking');
-    console.log('========================================');
+ensureTables().then(() => app.listen(PORT, () => {
+    console.log('Backend connected successfully');
+})).catch((error) => {
+    console.error('Database schema initialization failed:', error);
+    process.exit(1);
 });
 
 module.exports = app;

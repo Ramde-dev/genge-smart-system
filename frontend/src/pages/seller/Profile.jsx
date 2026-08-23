@@ -15,6 +15,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineCamera,
   HiOutlineOfficeBuilding,
+  HiOutlineSave,
 } from 'react-icons/hi';
 
 export default function Profile() {
@@ -46,7 +47,15 @@ export default function Profile() {
     const fetchSettings = async () => {
       try {
         const { data } = await api.get('/auth/profile');
-        setProfile(data);
+        const user = data.user || data;
+        setProfile({
+          shopName: user.shopName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          address: user.address || '',
+          bio: user.bio || '',
+          logo: user.avatar_url || user.logo || '',
+        });
       } catch (err) {
         console.error('Error loading profile', err);
       }
@@ -140,14 +149,28 @@ export default function Profile() {
             onClick={handleSave}
             disabled={loading}
             className={styles.saveBtn}
+            aria-label={loading ? 'Saving changes' : 'Save changes'}
           >
             {loading ? (
-              <span className={styles.spinner} />
+              <>
+                <span className={styles.spinner} />
+                Saving...
+              </>
             ) : (
-              'Save Changes'
+              <>
+                <HiOutlineSave size={20} />
+                Save Changes
+              </>
             )}
           </button>
         </header>
+
+        {!profile.phone && (
+          <div className={styles.phoneReminder} role="alert">
+            <strong>Add your payment phone number.</strong>
+            <span>Admin needs this number to send your seller payments.</span>
+          </div>
+        )}
 
         <div className={styles.tabContainer}>
           <TabButton
@@ -223,7 +246,7 @@ function ShopForm({ profile, setProfile, profileErrors, setProfileErrors }) {
       const { data } = await api.post('/auth/upload-logo', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setProfile({ ...profile, logo: data.logoPath });
+      setProfile((current) => ({ ...current, logo: data.avatarPath || data.logoPath || '' }));
       setProfileErrors((prev) => ({ ...prev, logo: '' }));
     } catch (err) {
       setProfileErrors((prev) => ({ ...prev, logo: err.response?.data?.message || 'Upload failed' }));
@@ -237,9 +260,10 @@ function ShopForm({ profile, setProfile, profileErrors, setProfileErrors }) {
         <div className={styles.logoPreview}>
           {profile.logo ? (
             <img
-              src={`http://localhost:5000${profile.logo}`}
+              src={profile.logo.startsWith('http') ? profile.logo : `http://localhost:5000${profile.logo}`}
               alt="Logo"
               className={styles.logoImage}
+              onError={(event) => { event.currentTarget.style.display = 'none'; }}
             />
           ) : (
             <HiOutlineCamera size={40} className={styles.logoPlaceholderIcon} />
@@ -286,7 +310,7 @@ function ShopForm({ profile, setProfile, profileErrors, setProfileErrors }) {
         </div>
 
         <div className={styles.inputGroup}>
-          <label className={styles.label}>Phone Number</label>
+          <label className={styles.label}>Phone Number <span className={styles.required}>Required for payments</span></label>
           <input
             className={`${styles.input} ${profileErrors.phone ? styles.inputError : ''}`}
             value={profile.phone || ''}

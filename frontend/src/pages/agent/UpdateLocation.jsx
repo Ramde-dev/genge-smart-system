@@ -35,13 +35,6 @@ export default function UpdateLocation() {
     'delivered'
   ]);
 
-  // Fetch delivery details if deliveryId is provided
-  useEffect(() => {
-    if (deliveryIdFromUrl) {
-      fetchDeliveryDetails(deliveryIdFromUrl);
-    }
-  }, [deliveryIdFromUrl]);
-
   const fetchDeliveryDetails = async (id) => {
     try {
       const res = await api.get(`/agent/deliveries/${id}`);
@@ -61,6 +54,21 @@ export default function UpdateLocation() {
       });
     }
   };
+
+  // Fetch delivery details if deliveryId is provided
+  useEffect(() => {
+    if (deliveryIdFromUrl) {
+      const numericDeliveryId = Number(deliveryIdFromUrl);
+      if (!Number.isInteger(numericDeliveryId) || numericDeliveryId <= 0) {
+        setFieldErrors({ deliveryId: 'Delivery ID must be a positive whole number.' });
+        setMessage({ type: 'error', text: 'The delivery link contains an invalid Delivery ID.' });
+        return undefined;
+      }
+      const request = setTimeout(() => fetchDeliveryDetails(deliveryIdFromUrl), 0);
+      return () => clearTimeout(request);
+    }
+    return undefined;
+  }, [deliveryIdFromUrl]);
 
   // Get current location from browser
   const getCurrentLocation = () => {
@@ -161,7 +169,7 @@ export default function UpdateLocation() {
 
     try {
       // Update location
-      const locationRes = await api.post('/agent/update-location', {
+      await api.post('/agent/update-location', {
         deliveryId: parseInt(deliveryId),
         latitude: parseFloat(lat),
         longitude: parseFloat(lng),
@@ -178,7 +186,7 @@ export default function UpdateLocation() {
 
       setMessage({ 
         type: 'success', 
-        text: '✅ Location updated successfully! Buyer can now track your location.' 
+        text: 'Location updated successfully! Buyer can now track your location.' 
       });
 
       // Refresh delivery details
@@ -321,7 +329,7 @@ export default function UpdateLocation() {
                 disabled={fetchingLocation || loading}
               >
                 <HiOutlineRefresh className={fetchingLocation ? styles.spinning : ''} />
-                {fetchingLocation ? 'Getting Location...' : '📍 Use Current Location'}
+                {fetchingLocation ? 'Getting Location...' : <><HiOutlineLocationMarker aria-hidden="true" /> Use Current Location</>}
               </button>
             </div>
 

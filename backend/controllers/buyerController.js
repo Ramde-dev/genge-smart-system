@@ -2,12 +2,19 @@ const db = require('../config/db');
 const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const { adminPaymentNumber } = require('../config/payment');
 
 // ── Get all products (with optional category filter & unit) ──
 exports.getProducts = async (req, res) => {
     try {
         const { category } = req.query;
-        let sql = "SELECT id, name, price, description, image_url, category, unit FROM products WHERE deleted_at IS NULL";
+        let sql = `
+            SELECT p.id, p.name, p.price, p.description, p.image_url, p.category, p.unit,
+                   p.stock, p.status, p.seller_id, u.name AS seller_name
+            FROM products p
+            LEFT JOIN users u ON u.id = p.seller_id
+            WHERE p.deleted_at IS NULL AND (p.status = 'active' OR p.status IS NULL)
+        `;
         const params = [];
         if (category) {
             sql += " AND category = ?";
@@ -22,6 +29,26 @@ exports.getProducts = async (req, res) => {
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ message: "Error fetching products", error: err.message });
+    }
+};
+
+// ── Get categories represented by visible products ──
+exports.getCategories = async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT category AS name, COUNT(*) AS product_count
+            FROM products
+            WHERE category IS NOT NULL
+              AND category <> ''
+              AND deleted_at IS NULL
+              AND (status = 'active' OR status IS NULL)
+            GROUP BY category
+            ORDER BY category ASC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error('Category database error:', err);
+        res.status(500).json({ message: 'Error fetching categories', error: err.message });
     }
 };
 
@@ -222,10 +249,25 @@ exports.createOrder = async (req, res) => {
                 [orderId, item.product_id, item.quantity, item.price]
             );
         }
+        await db.execute(
+            `INSERT INTO payments (order_id, buyer_id, amount, method, destination_number, status)
+             VALUES (?, ?, ?, 'mobile_money', ?, 'pending')`,
+            [orderId, buyerId, totalPrice, adminPaymentNumber]
+        );
+        await db.execute(
+            `INSERT INTO seller_payouts (order_id, seller_id, amount, status)
+             VALUES (?, ?, ?, 'pending')`,
+            [orderId, sellerId, totalPrice]
+        );
         res.status(201).json({
             message: "Order placed successfully",
             orderId,
             totalPrice,
+            payment: {
+                method: 'mobile_money',
+                destinationNumber: adminPaymentNumber,
+                status: 'pending'
+            }
         });
     } catch (err) {
         console.error("Create order error:", err);
@@ -305,3 +347,122 @@ exports.getTrackingDetail = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+exports.getAddresses = async (req, res) => {
+    const [addresses] = await db.execute(
+        `SELECT id, name, full_name AS fullName, phone, address, city, region,
+                postal_code AS postalCode, is_default AS isDefault
+         FROM buyer_addresses WHERE buyer_id = ? ORDER BY is_default DESC, created_at DESC`,
+        [req.userId]
+    );
+    res.json(addresses);
+};
+
+exports.createAddress = async (req, res) => {
+    const address = normalizeAddress(req.body);
+    validateAddress(address);
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        if (address.isDefault) {
+            await connection.execute('UPDATE buyer_addresses SET is_default = FALSE WHERE buyer_id = ?', [req.userId]);
+        }
+        const [result] = await connection.execute(
+            `INSERT INTO buyer_addresses
+             (buyer_id, name, full_name, phone, address, city, region, postal_code, is_default)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [req.userId, address.name, address.fullName, address.phone, address.address,
+                address.city, address.region, address.postalCode || null, address.isDefault]
+        );
+        await connection.commit();
+        res.status(201).json({ ...address, id: result.insertId });
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
+exports.updateAddress = async (req, res) => {
+    const address = normalizeAddress(req.body);
+    validateAddress(address);
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        if (address.isDefault) {
+            await connection.execute('UPDATE buyer_addresses SET is_default = FALSE WHERE buyer_id = ?', [req.userId]);
+        }
+        const [result] = await connection.execute(
+            `UPDATE buyer_addresses SET name = ?, full_name = ?, phone = ?, address = ?, city = ?,
+             region = ?, postal_code = ?, is_default = ? WHERE id = ? AND buyer_id = ?`,
+            [address.name, address.fullName, address.phone, address.address, address.city,
+                address.region, address.postalCode || null, address.isDefault, req.params.id, req.userId]
+        );
+        if (!result.affectedRows) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Address not found' });
+        }
+        await connection.commit();
+        res.json({ ...address, id: Number(req.params.id) });
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
+exports.deleteAddress = async (req, res) => {
+    const [result] = await db.execute(
+        'DELETE FROM buyer_addresses WHERE id = ? AND buyer_id = ?',
+        [req.params.id, req.userId]
+    );
+    if (!result.affectedRows) return res.status(404).json({ message: 'Address not found' });
+    res.json({ message: 'Address deleted' });
+};
+
+exports.setDefaultAddress = async (req, res) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        await connection.execute('UPDATE buyer_addresses SET is_default = FALSE WHERE buyer_id = ?', [req.userId]);
+        const [result] = await connection.execute(
+            'UPDATE buyer_addresses SET is_default = TRUE WHERE id = ? AND buyer_id = ?',
+            [req.params.id, req.userId]
+        );
+        if (!result.affectedRows) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Address not found' });
+        }
+        await connection.commit();
+        res.json({ message: 'Default address updated' });
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
+function normalizeAddress(input) {
+    return {
+        name: String(input.name || '').trim(),
+        fullName: String(input.fullName || '').trim(),
+        phone: String(input.phone || '').trim(),
+        address: String(input.address || '').trim(),
+        city: String(input.city || '').trim(),
+        region: String(input.region || '').trim(),
+        postalCode: String(input.postalCode || '').trim(),
+        isDefault: Boolean(input.isDefault),
+    };
+}
+
+function validateAddress(address) {
+    const required = ['name', 'fullName', 'phone', 'address', 'city', 'region'];
+    if (required.some(field => !address[field])) {
+        const error = new Error('Name, full name, phone, address, city, and region are required');
+        error.status = 400;
+        throw error;
+    }
+}

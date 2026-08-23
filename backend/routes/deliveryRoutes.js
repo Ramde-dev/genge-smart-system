@@ -6,7 +6,6 @@ const { authenticateToken, authorize } = require('../middleware/authMiddleware')
 let deliveryController;
 try {
     deliveryController = require('../controllers/deliveryController');
-    console.log('Delivery controller loaded successfully');
 } catch (err) {
     console.error(' Error loading deliveryController:', err.message);
     deliveryController = {};

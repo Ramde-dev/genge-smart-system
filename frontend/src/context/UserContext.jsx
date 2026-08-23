@@ -10,6 +10,10 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userRole');
       setLoading(false);
       return;
     }
@@ -20,6 +24,10 @@ export const UserProvider = ({ children }) => {
       })
       .catch(() => {
         setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userRole');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -28,8 +36,12 @@ export const UserProvider = ({ children }) => {
     setUser((prev) => ({ ...prev, ...newData }));
   };
 
+  const setAuthenticatedUser = (userData) => {
+    setUser(userData);
+  };
+
   return (
-    <UserContext.Provider value={{ user, loading, updateUser }}>
+    <UserContext.Provider value={{ user, loading, updateUser, setAuthenticatedUser }}>
       {children}
     </UserContext.Provider>
   );

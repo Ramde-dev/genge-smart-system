@@ -17,7 +17,7 @@ export default function Cart() {
 
   return (
     <BuyerLayout onSearch={setSearchTerm}>
-      <div className={styles.container}>
+      <div className={`${styles.container} ${cart.length === 0 ? styles.emptyContainer : ''}`}>
         <header className={styles.header}>
           <h1 className={styles.title}>Your Shopping Cart</h1>
           <p className={styles.subtitle}>
@@ -29,7 +29,6 @@ export default function Cart() {
           <div className={styles.emptyState}>
             <FaShoppingCart size={64} className={styles.emptyIcon} />
             <h3>Your cart is empty</h3>
-            <p>Browse our products and add items you love</p>
             <Link to="/buyer/home" className={styles.shopBtn}>Start Shopping</Link>
           </div>
         ) : filteredCart.length === 0 ? (

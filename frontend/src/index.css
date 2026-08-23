@@ -1,7 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+:root {
+  --app-font-body: "Inter", sans-serif;
+  --app-font-display: "Inter", sans-serif;
+  --app-text-xs: 0.75rem;
+  --app-text-sm: 0.9375rem;
+  --app-text-md: 1.0625rem;
+  --app-text-lg: 1.2rem;
+  --app-text-xl: 1.6rem;
+  --app-text-2xl: clamp(1.9rem, 4vw, 2.7rem);
+  --app-ink: #1f2d3d;
+  --app-muted: #6b7785;
+  --app-green: #ff6a00;
+  --app-green-hover: #e85f00;
+  --app-gold: #ff6a00;
+  --app-border: #e6e8eb;
+  --app-surface: #ffffff;
+  --app-radius: 0.65rem;
+}
+
+body * {
+  font-family: var(--app-font-body) !important;
 }
 
 @layer base {
@@ -10,14 +34,145 @@
   }
 
   body {
-    @apply antialiased text-slate-900 bg-slate-50;
+    @apply antialiased bg-slate-50;
+    color: var(--app-ink);
+    font-family: var(--app-font-body);
+    font-size: 16px;
+    line-height: 1.5;
     overflow-x: hidden;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button > svg,
+  a > svg {
+    width: 1.2em;
+    height: 1.2em;
+    flex: 0 0 auto;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--app-gold) 65%, transparent);
+    outline-offset: 2px;
+  }
+
+  form {
+    width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--app-font-display);
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  h1 { font-size: var(--app-text-2xl); }
+  h2 { font-size: var(--app-text-xl); }
+  h3 { font-size: var(--app-text-lg); }
+
+  p,
+  label,
+  input,
+  textarea,
+  select,
+  button {
+    font-family: var(--app-font-body);
+  }
+
+  label { font-size: var(--app-text-sm); font-weight: 650; }
+  button { font-size: var(--app-text-sm); font-weight: 650; }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    min-height: 44px;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    background: var(--app-surface);
+    color: var(--app-ink);
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--app-green-hover);
+    box-shadow: 0 0 0 3px rgba(35, 135, 90, 0.12);
+    outline: none;
+  }
+
+  button:not([class*="icon"]):not([aria-label]) {
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  button:active {
+    transform: translateY(1px);
   }
 
   img,
   svg {
     display: block;
     max-width: 100%;
+  }
+
+  table {
+    max-width: 100%;
+  }
+}
+
+/* Shared commerce visual language. */
+body {
+  background: #f5f5f5;
+  color: #1f2d3d;
+}
+
+body :is(input, textarea, select) {
+  border-color: #d9dde2;
+  border-radius: 2px;
+  background: #fff;
+  color: #1f2d3d;
+}
+
+body :is(button, a) svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+body :is(button, a):focus-visible,
+body :is(input, textarea, select):focus-visible {
+  outline-color: #ff6a00;
+}
+
+@media (max-width: 640px) {
+  .formGrid,
+  .checkoutLayout,
+  .cartLayout,
+  .contentGrid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
 

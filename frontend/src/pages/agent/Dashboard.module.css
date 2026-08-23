@@ -303,6 +303,12 @@
     font-size: 0.95rem;
 }
 
+.deliveryId {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .orderDate {
     display: flex;
     align-items: center;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiOutlineSearch, HiOutlineFilter } from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlineFilter, HiOutlineExclamationCircle } from 'react-icons/hi';
 import api from '../../services/api';
 import styles from './SearchFilterBar.module.css';
 
@@ -9,10 +9,6 @@ export default function SearchFilterBar({ onSearch, onCategoryChange }) {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -55,6 +51,11 @@ export default function SearchFilterBar({ onSearch, onCategoryChange }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const request = setTimeout(fetchCategories, 0);
+    return () => clearTimeout(request);
+  }, []);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -118,7 +119,7 @@ export default function SearchFilterBar({ onSearch, onCategoryChange }) {
           ))}
         </select>
         <HiOutlineFilter className={styles.filterIcon} size={20} />
-        {error && <span className={styles.errorText}>⚠️</span>}
+        {error && <HiOutlineExclamationCircle className={styles.errorText} aria-label="Category loading error" />}
       </div>
     </div>
   );

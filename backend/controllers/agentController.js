@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { createNotification } = require('./notificationController');
 
 // ── Get deliveries assigned to the logged-in agent ──
 exports.getDeliveries = async (req, res) => {
@@ -61,6 +62,13 @@ exports.getDeliveryDetails = async (req, res) => {
     try {
         const agentId = req.user.id;
         const { deliveryId } = req.params;
+
+        if (!Number.isInteger(Number(deliveryId)) || Number(deliveryId) <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Delivery ID must be a positive whole number'
+            });
+        }
 
         // Get the agent's delivery_agent ID
         const [agent] = await pool.query(
@@ -218,17 +226,14 @@ exports.updateLocation = async (req, res) => {
         }
 
         // Create notification for buyer
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             deliveryCheck[0].buyer_id,
-            deliveryCheck[0].order_id,
+            'tracking',
             '📍 Location Updated',
             `Your delivery agent has updated their location for Order #${deliveryCheck[0].order_id}`,
-            'tracking'
-        ]);
+                `/buyer/tracking/${deliveryCheck[0].order_id}`,
+                deliveryCheck[0].order_id
+        );
 
         res.json({
             success: true,
@@ -317,31 +322,25 @@ exports.updateDeliveryStatus = async (req, res) => {
             'cancelled': 'Your order has been cancelled ❌'
         };
 
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             deliveryCheck[0].buyer_id,
-            deliveryCheck[0].order_id,
+            'order',
             `📦 Order #${deliveryCheck[0].order_id} Updated`,
             statusMessages[status] || `Delivery status updated to: ${status}`,
-            'order'
-        ]);
+                `/buyer/tracking/${deliveryCheck[0].order_id}`,
+                deliveryCheck[0].order_id
+        );
 
         // If delivered, also notify that delivery is complete
         if (status === 'delivered') {
-            await pool.query(`
-                INSERT INTO notifications 
-                (user_id, order_id, title, message, type) 
-                VALUES (?, ?, ?, ?, ?)
-            `, [
+            await createNotification(
                 deliveryCheck[0].buyer_id,
-                deliveryCheck[0].order_id,
+                'order',
                 '✅ Delivery Complete',
                 'Your order has been successfully delivered! Thank you for shopping with us!',
-                'order'
-            ]);
+                    `/buyer/orders/${deliveryCheck[0].order_id}`,
+                    deliveryCheck[0].order_id
+            );
         }
 
         res.json({

@@ -6,7 +6,6 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 let trackingController;
 try {
     trackingController = require('../controllers/trackingController');
-    console.log('Tracking controller loaded successfully');
 } catch (err) {
     console.error('❌ Error loading trackingController:', err.message);
     trackingController = {};

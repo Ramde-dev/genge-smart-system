@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendNotificationEmail } = require('../utils/email');
 
 // ── Get all notifications for the logged‑in buyer ──
 exports.getNotifications = async (req, res) => {
@@ -103,13 +104,17 @@ exports.getNotificationById = async (req, res) => {
 };
 
 // ── Create a notification (used by seller order status update and delivery) ──
-exports.createNotification = async (userId, type, title, message, link = null) => {
+exports.createNotification = async (userId, type, title, message, link = null, orderId = null) => {
     try {
         await pool.query(
-            `INSERT INTO notifications (user_id, type, title, message, link) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [userId, type, title, message, link]
+            `INSERT INTO notifications (user_id, order_id, type, title, message, link) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [userId, orderId, type, title, message, link]
         );
+        const [users] = await pool.query('SELECT email FROM users WHERE id = ?', [userId]);
+        if (users[0]?.email) {
+            await sendNotificationEmail(users[0].email, title, message, link);
+        }
     } catch (err) {
         console.error('Failed to create notification:', err);
     }

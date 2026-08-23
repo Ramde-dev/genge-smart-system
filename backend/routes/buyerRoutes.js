@@ -7,7 +7,6 @@ const upload = require('../middleware/upload');
 let buyerController;
 try {
     buyerController = require('../controllers/buyerController');
-    console.log('✅ Buyer controller loaded successfully');
 } catch (err) {
     console.error('❌ Error loading buyerController:', err.message);
     // Create fallback controller with empty functions
@@ -55,6 +54,12 @@ router.get('/profile', safeHandler(buyerController.getProfile));
 
 // Update buyer profile
 router.put('/profile', upload.single('avatar'), safeHandler(buyerController.updateProfile));
+
+router.get('/addresses', safeHandler(buyerController.getAddresses));
+router.post('/addresses', safeHandler(buyerController.createAddress));
+router.put('/addresses/:id', safeHandler(buyerController.updateAddress));
+router.delete('/addresses/:id', safeHandler(buyerController.deleteAddress));
+router.put('/addresses/:id/default', safeHandler(buyerController.setDefaultAddress));
 
 // Upload avatar
 router.post('/upload-avatar', upload.single('avatar'), safeHandler(buyerController.uploadAvatar));

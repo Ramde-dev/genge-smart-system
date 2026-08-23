@@ -25,12 +25,6 @@ const upload = multer({ storage });
 
 // ── PUBLIC ROUTES (No authentication required) ──
 
-// Debug: log incoming requests to product router
-router.use((req, res, next) => {
-    try { console.log(`[PRODUCT ROUTER] ${req.method} ${req.path}`); } catch (e) {}
-    next();
-});
-
 
 // 1. GET all unique categories (public)
 router.get('/categories', async (req, res) => {
@@ -393,7 +387,6 @@ try {
         router.stack.forEach((layer) => {
             if (layer.route && layer.route.path) {
                 const methods = Object.keys(layer.route.methods).join(',').toUpperCase();
-                console.log(`Product route registered: ${methods} ${layer.route.path}`);
             }
         });
     }

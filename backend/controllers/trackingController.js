@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { createNotification } = require('./notificationController');
 
 // ── Get tracking info for a specific order ──
 exports.getTrackingInfo = async (req, res) => {
@@ -433,17 +434,14 @@ exports.createTestNotification = async (req, res) => {
             });
         }
 
-        await pool.query(`
-            INSERT INTO notifications 
-            (user_id, order_id, title, message, type) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [
+        await createNotification(
             userId,
-            orderId || null,
+            type || 'info',
             title || 'Test Notification',
             message || 'This is a test notification',
-            type || 'info'
-        ]);
+            null,
+            orderId || null
+        );
 
         res.json({
             success: true,

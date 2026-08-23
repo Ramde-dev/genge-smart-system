@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useUser } from '../../context/UserContext';
 import BuyerLayout from './BuyerLayout';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaCreditCard, FaMobileAlt, FaMoneyBillWave, FaSpinner } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaCheckCircle, FaMobileAlt, FaSpinner } from 'react-icons/fa';
 import api from '../../services/api';
 import styles from './Checkout.module.css';
 
 export default function Checkout() {
   const { cart, clearCart } = useCart();
   const { user } = useUser();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     fullName: user?.name || '',
@@ -21,12 +20,25 @@ export default function Checkout() {
     region: '',
     postalCode: '',
     paymentMethod: 'mobile_money',
+    paymentProvider: 'mpesa',
     saveAddress: false,
   });
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [orderSuccess, setOrderSuccess] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    setForm((current) => ({
+      ...current,
+      fullName: current.fullName || user.name || '',
+      email: current.email || user.email || '',
+      phone: current.phone || user.phone || '',
+      address: current.address || user.address || '',
+    }));
+  }, [user]);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 0 ? 2500 : 0;
@@ -74,6 +86,7 @@ export default function Checkout() {
         address: form.address,
         phone: form.phone,
         paymentMethod: form.paymentMethod,
+        paymentProvider: form.paymentProvider,
         fullName: form.fullName,
         email: form.email,
         city: form.city,
@@ -86,7 +99,7 @@ export default function Checkout() {
       if (response.status === 201 || response.status === 200) {
         clearCart();
         setServerError('');
-        navigate('/buyer/orders');
+        setOrderSuccess(response.data.orderId || true);
       }
     } catch (error) {
       console.error('Order error:', error);
@@ -103,7 +116,7 @@ export default function Checkout() {
         if (data.error) {
           errorMsg += `\n\nError: ${data.error}`;
         }
-        if (data.stack && process.env.NODE_ENV === 'development') {
+        if (data.stack && import.meta.env.DEV) {
           errorMsg += `\n\nDetails: ${data.stack}`;
         }
         // If response has validation errors (like missing products)
@@ -136,21 +149,30 @@ export default function Checkout() {
     if (serverError) setServerError('');
   };
 
-  const paymentMethods = [
-    { id: 'mobile_money', label: 'Mobile Money', icon: <FaMobileAlt /> },
-    { id: 'card', label: 'Credit / Debit Card', icon: <FaCreditCard /> },
-    { id: 'cash', label: 'Cash on Delivery', icon: <FaMoneyBillWave /> },
-  ];
+  const mobileProviders = ['M-Pesa', 'Tigo Pesa', 'Airtel Money', 'HaloPesa'];
 
   return (
     <BuyerLayout>
       <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Checkout</h1>
-          <p className={styles.subtitle}>Review your order and complete payment</p>
+          <p className={styles.subtitle}>Enter your delivery details and confirm your payment method.</p>
+          <ol className={styles.steps} aria-label="Checkout progress">
+            <li className={styles.stepActive}><span>1</span>Delivery details</li>
+            <li><span>2</span>Payment method</li>
+            <li><span>3</span>Place order</li>
+          </ol>
         </header>
 
-        {cart.length === 0 ? (
+        {orderSuccess ? (
+          <div className={styles.successState} role="status">
+            <FaCheckCircle className={styles.successIcon} />
+            <h2>Order placed successfully</h2>
+            <p>Your order has been received and is being processed.</p>
+            {orderSuccess !== true && <p className={styles.orderReference}>Order #{orderSuccess}</p>}
+            <Link to="/buyer/orders" className={styles.shopBtn}>View My Orders</Link>
+          </div>
+        ) : cart.length === 0 ? (
           <div className={styles.emptyState}>
             <p>Your cart is empty.</p>
             <Link to="/buyer/home" className={styles.shopBtn}>Continue Shopping</Link>
@@ -168,8 +190,9 @@ export default function Checkout() {
                 )}
                 <div className={styles.formGrid}>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Full Name *</label>
+                    <label htmlFor="fullName" className={styles.label}>Full Name *</label>
                     <input
+                      id="fullName"
                       type="text"
                       name="fullName"
                       className={`${styles.input} ${errors.fullName ? styles.inputError : ''}`}
@@ -181,8 +204,9 @@ export default function Checkout() {
                     {errors.fullName && <p className={styles.errorText}>{errors.fullName}</p>}
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Email *</label>
+                    <label htmlFor="email" className={styles.label}>Email *</label>
                     <input
+                      id="email"
                       type="email"
                       name="email"
                       className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
@@ -194,8 +218,9 @@ export default function Checkout() {
                     {errors.email && <p className={styles.errorText}>{errors.email}</p>}
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Phone Number *</label>
+                    <label htmlFor="phone" className={styles.label}>Phone Number *</label>
                     <input
+                      id="phone"
                       type="tel"
                       name="phone"
                       className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
@@ -207,8 +232,9 @@ export default function Checkout() {
                     {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
                   </div>
                   <div className={styles.inputGroupFull}>
-                    <label className={styles.label}>Address Line *</label>
+                    <label htmlFor="address" className={styles.label}>Address Line *</label>
                     <input
+                      id="address"
                       type="text"
                       name="address"
                       className={`${styles.input} ${errors.address ? styles.inputError : ''}`}
@@ -220,8 +246,9 @@ export default function Checkout() {
                     {errors.address && <p className={styles.errorText}>{errors.address}</p>}
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>City *</label>
+                    <label htmlFor="city" className={styles.label}>City *</label>
                     <input
+                      id="city"
                       type="text"
                       name="city"
                       className={`${styles.input} ${errors.city ? styles.inputError : ''}`}
@@ -233,8 +260,9 @@ export default function Checkout() {
                     {errors.city && <p className={styles.errorText}>{errors.city}</p>}
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Region *</label>
+                    <label htmlFor="region" className={styles.label}>Region *</label>
                     <input
+                      id="region"
                       type="text"
                       name="region"
                       className={`${styles.input} ${errors.region ? styles.inputError : ''}`}
@@ -246,8 +274,9 @@ export default function Checkout() {
                     {errors.region && <p className={styles.errorText}>{errors.region}</p>}
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Postal Code</label>
+                    <label htmlFor="postalCode" className={styles.label}>Postal Code</label>
                     <input
+                      id="postalCode"
                       type="text"
                       name="postalCode"
                       className={styles.input}
@@ -276,20 +305,31 @@ export default function Checkout() {
               <div className={styles.card}>
                 <h2 className={styles.cardTitle}>Payment Method</h2>
                 <div className={styles.paymentOptions}>
-                  {paymentMethods.map((method) => (
-                    <label key={method.id} className={styles.paymentOption}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={method.id}
-                        checked={form.paymentMethod === method.id}
-                        onChange={handleChange}
-                        disabled={submitting}
-                      />
-                      <span className={styles.paymentIcon}>{method.icon}</span>
-                      <span>{method.label}</span>
-                    </label>
-                  ))}
+                  <div className={styles.paymentOption}>
+                    <span className={styles.paymentIcon}><FaMobileAlt /></span>
+                    <span>Mobile Money</span>
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="paymentProvider" className={styles.label}>Mobile Money Provider</label>
+                    <select
+                      id="paymentProvider"
+                      name="paymentProvider"
+                      className={styles.input}
+                      value={form.paymentProvider}
+                      onChange={handleChange}
+                      disabled={submitting}
+                    >
+                      {mobileProviders.map((provider) => (
+                        <option key={provider} value={provider.toLowerCase().replaceAll(' ', '_')}>
+                          {provider}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className={styles.paymentNumber}>
+                  <span>Pay to system number</span>
+                  <strong>0785898551</strong>
                 </div>
               </div>
             </div>

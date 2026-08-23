@@ -14,7 +14,6 @@ import styles from './Reports.module.css';
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
-  const [filteredReports, setFilteredReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -30,7 +29,6 @@ export default function Reports() {
     try {
       const res = await api.get('/admin/reports');
       setReports(res.data);
-      setFilteredReports(res.data);
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Error fetching reports:', err);
@@ -42,26 +40,22 @@ export default function Reports() {
 
   // ── Auto-refresh ──
   useEffect(() => {
-    fetchReports();
+    const initialFetch = setTimeout(fetchReports, 0);
     const interval = setInterval(fetchReports, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+    };
   }, [fetchReports]);
 
-  // ── Search ──
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredReports(reports);
-      return;
-    }
+  const filteredReports = searchTerm.trim()
+    ? reports.filter((report) => {
     const lower = searchTerm.toLowerCase();
-    const filtered = reports.filter(
-      (r) =>
-        r.name.toLowerCase().includes(lower) ||
-        r.type.toLowerCase().includes(lower) ||
-        r.status.toLowerCase().includes(lower)
-    );
-    setFilteredReports(filtered);
-  }, [searchTerm, reports]);
+      return report.name.toLowerCase().includes(lower) ||
+        report.type.toLowerCase().includes(lower) ||
+        report.status.toLowerCase().includes(lower);
+    })
+    : reports;
 
   // ── Generate new report ──
   const generateReport = async () => {
@@ -70,7 +64,7 @@ export default function Reports() {
     try {
       await api.post('/admin/reports/generate');
       alert('Report generation started. It may take a few minutes to complete.');
-      setTimeout(fetchReports, 2000);
+      await fetchReports();
     } catch (err) {
       console.error('Error generating report:', err);
       alert(err.response?.data?.message || 'Failed to generate report.');
@@ -91,21 +85,18 @@ export default function Reports() {
   };
 
   // ── Download report ──
-  const downloadReport = (report) => {
-    // Create CSV content (mock – replace with real data from backend if available)
-    const headers = ['Report ID', 'Name', 'Date', 'Type', 'Status'];
-    const row = [report.id, report.name, report.date, report.type, report.status];
-    const csvContent = [headers.join(','), row.join(',')].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${report.name.replace(/\s+/g, '_')}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+  const downloadReport = async (report) => {
+    try {
+      const response = await api.get(`/admin/reports/${report.id}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${report.name.replace(/\s+/g, '_')}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to download report.');
+    }
   };
 
   const clearSearch = () => setSearchTerm('');

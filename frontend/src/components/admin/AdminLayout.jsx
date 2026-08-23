@@ -14,6 +14,7 @@ import {
   HiOutlineUserCircle,
   HiOutlineShoppingBag,
   HiOutlineTruck,
+  HiOutlineCurrencyDollar,
 } from 'react-icons/hi';
 import api from '../../services/api';
 import styles from './AdminLayout.module.css';
@@ -116,6 +117,7 @@ export default function AdminLayout({ children }) {
     { label: 'Fraud Alerts', path: '/admin/fraud-alerts', icon: <HiOutlineExclamationCircle size={22} /> },
     { label: 'Quality Scores', path: '/admin/quality-scores', icon: <HiOutlineStar size={22} /> },
     { label: 'Reports', path: '/admin/reports', icon: <HiOutlineDocumentText size={22} /> },
+    { label: 'Payouts', path: '/admin/payouts', icon: <HiOutlineCurrencyDollar size={22} /> },
   ];
 
   const isDesktop = () => window.innerWidth >= 768;

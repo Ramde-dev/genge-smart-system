@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { HiEye, HiEyeOff, HiLockClosed, HiMail, HiUser, HiCheck } from 'react-icons/hi';
+import { HiEye, HiEyeOff, HiLockClosed, HiMail, HiPhone, HiUser, HiCheck } from 'react-icons/hi';
 import styles from './Register.module.css';
 
 export default function Register() {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'Buyer' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'Buyer' });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,6 +17,7 @@ export default function Register() {
     const nextErrors = {};
     const name = formData.name.trim();
     const email = formData.email.trim();
+    const phone = formData.phone.trim();
     const password = formData.password.trim();
 
     if (!name) nextErrors.name = 'Full name is required';
@@ -24,6 +25,11 @@ export default function Register() {
 
     if (!email) nextErrors.email = 'Email is required';
     else if (!validateEmail(email)) nextErrors.email = 'Enter a valid email address';
+
+    if (formData.role === 'Seller') {
+      if (!phone) nextErrors.phone = 'Phone number is required for sellers';
+      else if (!/^\+?[0-9\s\-()]{7,}$/.test(phone)) nextErrors.phone = 'Enter a valid phone number';
+    }
 
     if (!password) nextErrors.password = 'Password is required';
     else if (password.length < 6) nextErrors.password = 'Password must be at least 6 characters';
@@ -128,6 +134,28 @@ export default function Register() {
             </div>
             {errors.email && <p className={styles.errorText}>{errors.email}</p>}
           </div>
+
+          {formData.role === 'Seller' && (
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Phone Number</label>
+              <div className={styles.inputWrapper}>
+                <HiPhone className={styles.inputIcon} size={20} />
+                <input
+                  type="tel"
+                  className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
+                  value={formData.phone}
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    if (errors.phone) setErrors((prev) => ({ ...prev, phone: '' }));
+                  }}
+                  placeholder="+255 700 000 000"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
+            </div>
+          )}
 
           {/* Password */}
           <div className={styles.inputGroup}>

@@ -1,6 +1,57 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 
+exports.getPayouts = async (req, res) => {
+    try {
+        const [payouts] = await pool.query(`
+                 SELECT sp.id, sp.order_id, sp.seller_id, sp.amount, sp.status, sp.paid_at,
+                     sp.created_at, u.name AS seller_name, u.email AS seller_email,
+                     u.phone AS seller_phone
+            FROM seller_payouts sp
+            JOIN users u ON u.id = sp.seller_id
+            ORDER BY sp.created_at DESC
+        `);
+        res.json({ success: true, payouts });
+    } catch (err) {
+        console.error('Get payouts error:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch seller payouts' });
+    }
+};
+
+exports.paySellerPayout = async (req, res) => {
+    try {
+        const [payout] = await pool.query(
+            `SELECT sp.id, u.phone AS seller_phone
+             FROM seller_payouts sp
+             JOIN users u ON u.id = sp.seller_id
+             WHERE sp.id = ? AND sp.status = 'pending'`,
+            [req.params.payoutId]
+        );
+        if (!payout.length) {
+            return res.status(404).json({ success: false, message: 'Pending payout not found' });
+        }
+        if (!payout[0].seller_phone || !payout[0].seller_phone.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Seller must add a phone number before payment can be released'
+            });
+        }
+
+        const [result] = await pool.query(
+            `UPDATE seller_payouts SET status = 'paid', paid_at = NOW()
+             WHERE id = ? AND status = 'pending'`,
+            [req.params.payoutId]
+        );
+        if (!result.affectedRows) {
+            return res.status(404).json({ success: false, message: 'Pending payout not found' });
+        }
+        res.json({ success: true, message: 'Seller payout marked as paid' });
+    } catch (err) {
+        console.error('Pay seller payout error:', err);
+        res.status(500).json({ success: false, message: 'Failed to pay seller payout' });
+    }
+};
+
 // ── 1. DASHBOARD ──
 exports.getDashboard = async (req, res) => {
     try {
@@ -287,16 +338,66 @@ exports.getQualityScores = async (req, res) => {
 
 // ── 6. REPORTS ──
 exports.getReports = async (req, res) => {
-    const mockReports = [
-        { id: 1, name: 'Monthly Sales Report', date: new Date().toISOString().slice(0,10), type: 'Sales', status: 'ready' },
-        { id: 2, name: 'User Growth Analysis', date: new Date().toISOString().slice(0,10), type: 'User', status: 'pending' },
-        { id: 3, name: 'Fraud Activity Summary', date: new Date().toISOString().slice(0,10), type: 'Fraud', status: 'ready' },
-    ];
-    res.json(mockReports);
+    try {
+        const [reports] = await pool.query(
+            `SELECT id, name, report_date AS date, type, status, created_at
+             FROM reports ORDER BY created_at DESC`
+        );
+        res.json(reports);
+    } catch (err) {
+        console.error('Get reports error:', err);
+        res.status(500).json({ message: 'Failed to fetch reports' });
+    }
 };
 
 exports.generateReport = async (req, res) => {
-    res.json({ message: 'Report generation started' });
+    try {
+        const [[sales]] = await pool.query(`
+            SELECT COUNT(*) AS orders, COALESCE(SUM(total_price), 0) AS revenue
+            FROM orders WHERE status = 'delivered'
+        `);
+        const [[users]] = await pool.query('SELECT COUNT(*) AS total FROM users');
+        const [[fraud]] = await pool.query('SELECT COUNT(*) AS total FROM fraud_logs');
+        const report = {
+            sales: { orders: Number(sales.orders), revenue: Number(sales.revenue) },
+            users: { total: Number(users.total) },
+            fraud: { total: Number(fraud.total) },
+        };
+        const [result] = await pool.query(
+            `INSERT INTO reports (name, report_date, type, status, data_json)
+             VALUES (?, CURDATE(), 'System', 'ready', ?)`,
+            [`System Report ${new Date().toISOString().slice(0, 10)}`, JSON.stringify(report)]
+        );
+        res.status(201).json({ message: 'Report generated', reportId: result.insertId });
+    } catch (err) {
+        console.error('Generate report error:', err);
+        res.status(500).json({ message: 'Failed to generate report' });
+    }
+};
+
+exports.downloadReport = async (req, res) => {
+    try {
+        const [reports] = await pool.query(
+            'SELECT name, report_date, type, status, data_json FROM reports WHERE id = ?',
+            [req.params.reportId]
+        );
+        if (!reports.length) return res.status(404).json({ message: 'Report not found' });
+        const report = reports[0];
+        const data = typeof report.data_json === 'string' ? JSON.parse(report.data_json) : report.data_json;
+        const rows = [['Report', report.name], ['Date', report.report_date], ['Type', report.type], ['Status', report.status]];
+        Object.entries(data).forEach(([section, values]) => {
+            Object.entries(values).forEach(([key, value]) => rows.push([`${section} ${key}`, value]));
+        });
+        const csv = rows
+            .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${report.name.replace(/[^a-z0-9]+/gi, '_')}.csv"`);
+        res.send(csv);
+    } catch (err) {
+        console.error('Download report error:', err);
+        res.status(500).json({ message: 'Failed to download report' });
+    }
 };
 
 // ── 7. MANAGE PRODUCTS ──

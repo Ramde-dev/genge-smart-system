@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--app-font-body);
   padding: 1.5rem;
 }
 

@@ -1,9 +1,9 @@
 /* ── Variables ── */
 :root {
-  --primary: #0f3b5c;
-  --primary-light: #1a5a7a;
-  --accent: #d8114c;
-  --accent-hover: #b80e40;
+  --primary: #1f4d5e;
+  --primary-light: #28758a;
+  --accent: #ff6a00;
+  --accent-hover: #e85f00;
   --gray-50: #f9fafb;
   --gray-100: #f1f5f9;
   --gray-200: #e2e8f0;
@@ -12,29 +12,29 @@
   --gray-500: #64748b;
   --gray-600: #475569;
   --gray-700: #334155;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 6px 18px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-  --radius: 1rem;
-  --radius-sm: 0.6rem;
+  --shadow-sm: 0 1px 2px rgba(15, 40, 50, 0.05);
+  --shadow-md: 0 6px 18px rgba(15, 40, 50, 0.08);
+  --shadow-lg: 0 12px 40px rgba(15, 40, 50, 0.12);
+  --radius: 8px;
+  --radius-sm: 4px;
   --transition: 0.25s ease;
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 1.5rem 0;
+  padding: 2rem 1.25rem 3rem;
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 
 .title {
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--gray-700);
-  margin-bottom: 0.2rem;
+  margin: 0 0 0.35rem;
 }
 
 .subtitle {
@@ -42,11 +42,84 @@
   font-size: 0.95rem;
 }
 
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  color: var(--gray-400);
+  font-size: 0.8rem;
+}
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+.steps li:not(:last-child)::after {
+  content: '';
+  width: 72px;
+  height: 1px;
+  margin: 0 0.75rem;
+  background: var(--gray-300);
+}
+.steps span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--gray-300);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.steps .stepActive {
+  color: var(--accent);
+  font-weight: 700;
+}
+.steps .stepActive span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
 /* ── Empty state ── */
 .emptyState {
   text-align: center;
   padding: 3rem 0;
   color: var(--gray-400);
+}
+.successState {
+  max-width: 620px;
+  margin: 2rem auto;
+  padding: 3rem 1.5rem;
+  border: 1px solid #b7e4cc;
+  border-radius: var(--radius);
+  background: #f3fcf6;
+  text-align: center;
+}
+.successIcon {
+  color: #17834b;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.successState h2 {
+  margin: 0 0 0.5rem;
+  color: #145c38;
+  font-size: 1.5rem;
+}
+.successState p {
+  margin: 0.35rem 0;
+  color: var(--gray-600);
+}
+.successState .shopBtn {
+  margin-top: 1.25rem;
+}
+.orderReference {
+  color: #145c38 !important;
+  font-weight: 700;
 }
 .shopBtn {
   display: inline-block;
@@ -67,8 +140,8 @@
 /* ── Checkout Layout ── */
 .checkoutLayout {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 1.5rem;
   align-items: start;
 }
 
@@ -76,29 +149,30 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  width: 100%;
 }
 
 .card {
   background: #ffffff;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   border: 1px solid var(--gray-200);
   padding: 1.5rem;
 }
 
 .cardTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--gray-700);
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 /* ── Form ── */
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.15rem 1rem;
 }
 .inputGroupFull {
   grid-column: 1 / -1;
@@ -110,15 +184,14 @@
 }
 
 .label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  text-transform: uppercase;
   color: var(--gray-500);
-  letter-spacing: 0.04em;
 }
 
 .input {
-  padding: 0.6rem 0.9rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
   border: 1.5px solid var(--gray-200);
   border-radius: var(--radius-sm);
   font-size: 1rem;
@@ -165,33 +238,39 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 1rem;
-  border: 1.5px solid var(--gray-200);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.paymentOption:hover {
-  border-color: var(--gray-300);
-}
-.paymentOption input[type="radio"] {
-  accent-color: var(--primary);
-  width: 18px;
-  height: 18px;
+  background: #fff8f2;
 }
 .paymentIcon {
   color: var(--gray-500);
   font-size: 1.2rem;
 }
-.paymentOption:has(input:checked) {
-  border-color: var(--primary-light);
+.paymentNumber {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
   background: var(--gray-50);
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+.paymentNumber strong {
+  color: var(--primary);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
 }
 
 /* ── Right Column (Summary) ── */
 .rightColumn {
+  width: 100%;
   position: sticky;
-  top: 6rem;
+  top: 1.25rem;
 }
 
 .summaryCard {
@@ -199,7 +278,7 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-200);
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .cartItems {
@@ -274,7 +353,7 @@
   color: #fff;
   font-weight: 600;
   border: none;
-  border-radius: 2rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition);
   margin-top: 1rem;
@@ -295,7 +374,7 @@
 @media (max-width: 992px) {
   .checkoutLayout {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.25rem;
   }
   .rightColumn {
     position: static;
@@ -303,11 +382,12 @@
 }
 
 @media (max-width: 768px) {
-  .container { padding: 1rem 0; }
+  .container { padding: 1rem 0.75rem 2rem; }
   .title { font-size: 1.5rem; }
   .card { padding: 1.25rem; }
   .formGrid { grid-template-columns: 1fr; }
   .summaryCard { padding: 1.25rem; }
+  .steps { overflow-x: auto; padding-bottom: 0.25rem; }
 }
 
 @media (max-width: 480px) {
@@ -335,4 +415,19 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+.paymentNotice {
+  margin: 1rem 0 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid #d9a52e;
+  border-radius: 0.45rem;
+  background: #fff8e7;
+  color: #6b4b0b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.paymentNotice strong {
+  color: #12613f;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }

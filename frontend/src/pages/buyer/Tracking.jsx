@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import BuyerLayout from './BuyerLayout';
 import api from '../../services/api';
 import {
@@ -10,7 +9,6 @@ import {
   HiOutlineEye,
   HiOutlineX,
   HiOutlineLocationMarker,
-  HiOutlineUser,
   HiOutlinePhone,
   HiOutlineRefresh,
   HiOutlineChevronRight
@@ -20,8 +18,7 @@ import styles from './Tracking.module.css';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 export default function Tracking() {
-  const navigate = useNavigate();
-  const { id } = useParams(); // For direct tracking link
+  const [currentTime] = useState(() => Date.now());
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,7 +46,7 @@ export default function Tracking() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    const initialFetch = setTimeout(fetchOrders, 0);
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -58,7 +55,10 @@ export default function Tracking() {
       }
     }, 30000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+    };
   }, [fetchOrders, modalOpen]);
 
   // ── Open modal and fetch tracking details ──
@@ -197,7 +197,7 @@ export default function Tracking() {
   };
 
   const getTimeAgo = (dateString) => {
-    const diff = Date.now() - new Date(dateString).getTime();
+    const diff = currentTime - new Date(dateString).getTime();
     const minutes = Math.floor(diff / 60000);
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
@@ -213,9 +213,6 @@ export default function Tracking() {
         <header className={styles.header}>
           <div className={styles.headerLeft}>
             <h1 className={styles.title}>Track Your Orders</h1>
-            <p className={styles.subtitle}>
-              {orders.length} {orders.length === 1 ? 'order' : 'orders'} in transit
-            </p>
           </div>
           <button 
             className={styles.refreshBtn}
@@ -238,7 +235,6 @@ export default function Tracking() {
           <div className={styles.emptyState}>
             <HiOutlineTruck size={48} className={styles.emptyIcon} />
             <h3>No orders to track</h3>
-            <p>Your orders with assigned delivery agents will appear here.</p>
           </div>
         ) : (
           <div className={styles.ordersList}>
@@ -403,7 +399,7 @@ export default function Tracking() {
                     <div className={styles.timelineSection}>
                       <h4>Delivery Timeline</h4>
                       <div className={styles.timeline}>
-                        {trackingEvents.map((event, index) => (
+                        {trackingEvents.map((event) => (
                           <div key={event.id} className={styles.timelineItem}>
                             <div className={styles.timelineDot} />
                             <div className={styles.timelineContent}>
@@ -450,15 +446,15 @@ export default function Tracking() {
                         if (!window.confirm('Have you received your order? Confirm delivery.')) return;
                         try {
                           await api.put(`/delivery/confirm/${selectedOrder.id}`);
-                          alert('✅ Order confirmed! Thank you for shopping with us.');
+                          alert('Order confirmed! Thank you for shopping with us.');
                           closeModal();
                           fetchOrders();
-                        } catch (err) {
+                        } catch {
                           alert('Failed to confirm. Please try again.');
                         }
                       }}
                     >
-                      I have received my order ✅
+                      <><HiOutlineCheckCircle aria-hidden="true" /> I have received my order</>
                     </button>
                   )}
                 </>

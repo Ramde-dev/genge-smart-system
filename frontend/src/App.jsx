@@ -11,6 +11,8 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Unauthorized from './pages/Unauthorized';
+import MarketplaceLanding from './pages/MarketplaceLanding';
+import Chatbot from './components/common/Chatbot';
 
 // Seller Pages
 import SellerDashboard from './pages/seller/Dashboard';
@@ -43,10 +45,14 @@ import AdminFraudAlerts from './pages/admin/FraudAlerts';
 import AdminQualityScores from './pages/admin/QualityScores';
 import AdminReports from './pages/admin/Reports';
 import AdminNotifications from './pages/admin/Notifications';
+import AdminPayouts from './pages/admin/Payouts';
 
 // Agent Pages
 import AgentDashboard from './pages/agent/Dashboard';
 import AgentUpdateLocation from './pages/agent/UpdateLocation';
+import AgentProfile from './pages/agent/Profile';
+import AgentNotifications from './pages/agent/Notifications';
+import AgentDeliveryDetails from './pages/agent/DeliveryDetails';
 
 function App() {
   return (
@@ -55,7 +61,7 @@ function App() {
         <CartProvider>
           <Routes>
             {/* Root Redirect */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<MarketplaceLanding />} />
 
             {/* Auth Routes (Public) */}
             <Route path="/login" element={<Login />} />
@@ -64,6 +70,11 @@ function App() {
 
             {/* Common Dashboard */}
             <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Public shopping and cart flow; checkout remains protected below. */}
+            <Route path="/buyer/home" element={<BuyerHome />} />
+            <Route path="/buyer/cart" element={<BuyerCart />} />
+            <Route path="/buyer/product/:id" element={<BuyerProductDetails />} />
 
             {/* Unauthorized Page */}
             <Route path="/unauthorized" element={<Unauthorized />} />
@@ -82,14 +93,11 @@ function App() {
 
             {/* Protected Buyer Routes */}
             <Route element={<ProtectedRoute roleRequired="buyer" />}>
-              <Route path="/buyer/home" element={<BuyerHome />} />
-              <Route path="/buyer/cart" element={<BuyerCart />} />
               <Route path="/buyer/profile" element={<BuyerProfile />} />
               <Route path="/buyer/orders" element={<BuyerOrders />} />
               <Route path="/buyer/addresses" element={<BuyerAddresses />} />
               <Route path="/buyer/checkout" element={<BuyerCheckout />} />
               <Route path="/buyer/tracking" element={<BuyerTracking />} />
-              <Route path="/buyer/product/:id" element={<BuyerProductDetails />} />
               <Route path="/buyer/notifications" element={<BuyerNotifications />} />
             </Route>
 
@@ -104,17 +112,23 @@ function App() {
               <Route path="/admin/fraud-alerts" element={<AdminFraudAlerts />} />
               <Route path="/admin/quality-scores" element={<AdminQualityScores />} />
               <Route path="/admin/reports" element={<AdminReports />} />
+              <Route path="/admin/payouts" element={<AdminPayouts />} />
             </Route>
 
             {/* Protected Agent Routes */}
             <Route element={<ProtectedRoute roleRequired="agent" />}>
               <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/agent/deliveries" element={<AgentDashboard />} />
+              <Route path="/agent/delivery/:id" element={<AgentDeliveryDetails />} />
               <Route path="/agent/update-location" element={<AgentUpdateLocation />} />
+              <Route path="/agent/profile" element={<AgentProfile />} />
+              <Route path="/agent/notifications" element={<AgentNotifications />} />
             </Route>
 
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          <Chatbot />
         </CartProvider>
       </UserProvider>
     </Router>

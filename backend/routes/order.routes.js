@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { authenticateToken } = require('../middleware/authMiddleware');
-const { sendStatusUpdateEmail } = require('../utils/email');
 const { createNotification } = require('../controllers/notificationController');
 
 // ── 1. DASHBOARD ──
@@ -208,25 +207,16 @@ router.put('/orders/:id/status', authenticateToken, async (req, res) => {
 
         // 2. Get buyer details
         const [rows] = await db.execute(`
-            SELECT u.email, u.id as buyer_id, o.buyer_id 
+            SELECT u.id as buyer_id, o.buyer_id 
             FROM orders o
             JOIN users u ON o.buyer_id = u.id
             WHERE o.id = ?
         `, [id]);
 
         if (rows.length > 0) {
-            const { email, buyer_id } = rows[0];
+            const { buyer_id } = rows[0];
 
-            // 3. Send email
-            try {
-                if (email) {
-                    await sendStatusUpdateEmail(email, id, status);
-                }
-            } catch (err) {
-                console.error('Email error:', err);
-            }
-
-            // 4. Create in-app notification for the buyer
+            // Create the in-app notification and its email from one central path.
             if (buyer_id) {
                 const statusMessages = {
                     'pending': 'Your order is pending confirmation',

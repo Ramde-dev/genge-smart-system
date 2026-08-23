@@ -9,8 +9,8 @@ export default function AgentProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await api.get('/auth/agent/profile');
-        setProfile(res.data.user);
+        const res = await api.get('/agent/profile');
+        setProfile(res.data.profile);
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
