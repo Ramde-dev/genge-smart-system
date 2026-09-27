@@ -13,7 +13,8 @@ export default function Cart() {
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const total = filteredCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // The search field only controls visibility; checkout always uses the full cart.
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <BuyerLayout onSearch={setSearchTerm}>
@@ -46,10 +47,10 @@ export default function Cart() {
                 <div key={item.id} className={styles.cartItem}>
                   <div className={styles.itemImageWrapper}>
                     <img
-                      src={item.imageUrl || '/images/placeholder.png'}
+                      src={item.imageUrl || '/placeholder.svg'}
                       alt={item.name}
                       className={styles.itemImage}
-                      onError={(e) => (e.target.src = '/images/placeholder.png')}
+                      onError={(e) => (e.target.src = '/placeholder.svg')}
                     />
                   </div>
                   <div className={styles.itemDetails}>

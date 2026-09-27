@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { authenticateToken, authorize } = require('../middleware/authMiddleware');
 
 // Import agent controller with error handling
 let agentController;
@@ -35,6 +35,7 @@ const safeHandler = (fn) => {
 
 // ── All agent routes require authentication ──
 router.use(authenticateToken);
+router.use(authorize(['agent']));
 
 // ── Delivery Management ──
 // Get all deliveries assigned to the agent

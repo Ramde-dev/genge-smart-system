@@ -37,14 +37,8 @@ const safeHandler = (fn) => {
 router.use(authenticateToken);
 
 // ── Tracking Info ──
-// Get tracking info for a specific order
-router.get('/:orderId', safeHandler(trackingController.getTrackingInfo));
-
 // Get all tracked orders for buyer
 router.get('/', safeHandler(trackingController.getTrackedOrders));
-
-// Get agent's current location for an order
-router.get('/location/:orderId', safeHandler(trackingController.getAgentLocation));
 
 // Get tracking stats for buyer
 router.get('/stats', safeHandler(trackingController.getTrackingStats));
@@ -64,6 +58,12 @@ router.put('/notifications/read-all', safeHandler(trackingController.markAllNoti
 
 // Delete notification
 router.delete('/notifications/:notificationId', safeHandler(trackingController.deleteNotification));
+
+// Get agent's current location for an order
+router.get('/location/:orderId', safeHandler(trackingController.getAgentLocation));
+
+// Get tracking info for a specific order
+router.get('/:orderId', safeHandler(trackingController.getTrackingInfo));
 
 // ── Test (Development only) ──
 // Create test notification (remove in production)

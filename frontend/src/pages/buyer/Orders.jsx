@@ -8,6 +8,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -25,9 +26,27 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
+  const cancelOrder = async (orderId) => {
+    if (!window.confirm('Cancel this order?')) return;
+    setCancellingId(orderId);
+    setError(null);
+    try {
+      await api.put(`/buyer/orders/${orderId}/cancel`);
+      setOrders((current) => current.map((order) => (
+        order.id === orderId ? { ...order, status: 'cancelled' } : order
+      )));
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to cancel order.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case 'pending':
+        return <HiOutlineClock className={styles.statusIconPending} />;
+      case 'processing':
         return <HiOutlineClock className={styles.statusIconPending} />;
       case 'shipped':
         return <HiOutlineTruck className={styles.statusIconShipped} />;
@@ -43,6 +62,8 @@ export default function Orders() {
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
       case 'pending':
+        return styles.statusPending;
+      case 'processing':
         return styles.statusPending;
       case 'shipped':
         return styles.statusShipped;
@@ -94,10 +115,10 @@ export default function Orders() {
                   {order.items?.map((item) => (
                     <div key={item.id} className={styles.orderItem}>
                       <img
-                        src={item.imageUrl || '/images/placeholder.png'}
+                        src={item.imageUrl || '/placeholder.svg'}
                         alt={item.name}
                         className={styles.itemImage}
-                        onError={(event) => { event.currentTarget.src = '/images/placeholder.png'; }}
+                        onError={(event) => { event.currentTarget.src = '/placeholder.svg'; }}
                       />
                       <div className={styles.itemDetails}>
                         <h4 className={styles.itemName}>{item.name}</h4>
@@ -114,6 +135,15 @@ export default function Orders() {
                   <span className={styles.totalAmount}>
                     TSh {Number(order.total_price).toLocaleString()}
                   </span>
+                  {(order.status === 'pending' || order.status === 'processing') && (
+                    <button
+                      type="button"
+                      onClick={() => cancelOrder(order.id)}
+                      disabled={cancellingId === order.id}
+                    >
+                      {cancellingId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

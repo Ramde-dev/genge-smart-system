@@ -24,7 +24,7 @@ export default function Navbar({ onSearch }) {
   const dropdownRef = useRef(null);
 
   const { cart } = useCart();
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -60,7 +60,12 @@ export default function Navbar({ onSearch }) {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) return undefined;
+    if (userLoading) return undefined;
+    if (!user || !localStorage.getItem('token')) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return undefined;
+    }
     const initialFetch = setTimeout(() => {
       fetchUnreadCount();
       fetchNotifications();
@@ -72,7 +77,7 @@ export default function Navbar({ onSearch }) {
       clearTimeout(initialFetch);
       clearInterval(interval);
     };
-  }, []);
+  }, [user, userLoading]);
 
   // ── Click outside to close dropdown ──
   useEffect(() => {
@@ -141,6 +146,15 @@ export default function Navbar({ onSearch }) {
     { to: '/buyer/profile', label: 'Profile' },
   ];
 
+  const requiresAccount = new Set(['Orders', 'Tracking', 'Addresses', 'Notifications', 'Profile']);
+  const isAuthenticated = Boolean(user && localStorage.getItem('token'));
+  const getLinkProps = (link) => ({
+    to: requiresAccount.has(link.label) && !isAuthenticated ? '/login' : link.to,
+    state: requiresAccount.has(link.label) && !isAuthenticated
+      ? { from: { pathname: link.to } }
+      : undefined,
+  });
+
   const desktopLinks = navLinks.filter(
     (link) => !['Cart', 'Profile', 'Notifications'].includes(link.label)
   );
@@ -149,7 +163,14 @@ export default function Navbar({ onSearch }) {
     <nav className={styles.navbar}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <button className={styles.menuBtn} onClick={() => setIsOpen(true)}>
+          <button
+            type="button"
+            className={styles.menuBtn}
+            onClick={() => setIsOpen(true)}
+            onPointerDown={() => setIsOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={isOpen}
+          >
             <HiMenu size={28} />
           </button>
           <Link to="/buyer/home" className={styles.brand}>
@@ -159,7 +180,7 @@ export default function Navbar({ onSearch }) {
 
         <div className={styles.desktopNav}>
           {desktopLinks.map((link) => (
-            <Link key={link.to} to={link.to} className={styles.navLink}>
+            <Link key={link.to} {...getLinkProps(link)} className={styles.navLink}>
               {link.label}
             </Link>
           ))}
@@ -216,7 +237,7 @@ export default function Navbar({ onSearch }) {
                       </div>
                     ))
                   )}
-                  <Link to="/buyer/notifications" className={styles.viewAll}>
+                  <Link {...getLinkProps({ to: '/buyer/notifications', label: 'Notifications' })} className={styles.viewAll}>
                     View all
                   </Link>
                 </div>
@@ -229,7 +250,7 @@ export default function Navbar({ onSearch }) {
             {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
           </Link>
 
-          <Link to="/buyer/profile" className={styles.avatarLink}>
+          <Link {...getLinkProps({ to: '/buyer/profile', label: 'Profile' })} className={styles.avatarLink} aria-label={user ? 'Open profile' : 'Sign in'}>
             {renderAvatar()}
           </Link>
         </div>
@@ -265,36 +286,39 @@ export default function Navbar({ onSearch }) {
       </div>
 
       {/* Mobile Drawer */}
-      <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}>
+      <div
+        className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}
+        style={{ left: isOpen ? 0 : '-260px', transform: 'none' }}
+      >
         <div className={styles.drawerHeader}>
           <div className={styles.drawerUser}>
             <div className={styles.drawerAvatar}>
               {user?.avatar_url ? (
                 <img src={`http://localhost:5000${user.avatar_url}`} alt="Profile" />
               ) : (
-                <span>{user?.name ? user.name.substring(0, 2).toUpperCase() : '??'}</span>
+                <span>{user?.name ? user.name.substring(0, 2).toUpperCase() : <HiOutlineUserCircle size={24} />}</span>
               )}
             </div>
             <div className={styles.drawerUserInfo}>
-              <span className={styles.drawerUserName}>{user?.name || 'Guest'}</span>
+              <span className={styles.drawerUserName}>{user?.name || 'Guest shopper'}</span>
               <span className={styles.drawerUserEmail}>{user?.email || ''}</span>
             </div>
           </div>
-          <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
+          <button type="button" className={styles.closeBtn} onClick={() => setIsOpen(false)} aria-label="Close menu">
             <HiX size={28} />
           </button>
         </div>
 
         <div className={styles.drawerLinks}>
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to} onClick={() => setIsOpen(false)}>
+            <Link key={link.to} {...getLinkProps(link)} onClick={() => setIsOpen(false)}>
               {link.label}
             </Link>
           ))}
         </div>
 
-        <button className={styles.drawerLogout} onClick={handleLogout}>
-          <HiOutlineLogout size={20} /> Sign Out
+        <button className={styles.drawerLogout} onClick={user ? handleLogout : () => { window.location.href = '/login'; }}>
+          <HiOutlineLogout size={20} /> {user ? 'Sign Out' : 'Sign In'}
         </button>
       </div>
     </nav>

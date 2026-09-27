@@ -21,6 +21,7 @@ export default function AddProduct() {
   const [product, setProduct] = useState({
     name: '',
     price: '',
+    stock: '',
     description: '',
     category: 'Vegetables',
     unit: 'Piece',
@@ -55,6 +56,8 @@ export default function AddProduct() {
 
     if (!product.price || Number(product.price) <= 0)
       newErrors.price = 'Enter a valid price';
+    if (product.stock === '' || Number(product.stock) < 0 || !Number.isInteger(Number(product.stock)))
+      newErrors.stock = 'Enter a valid stock quantity';
     if (!product.description.trim())
       newErrors.description = 'Description is required';
     else if (product.description.trim().length < 10)
@@ -83,6 +86,7 @@ export default function AddProduct() {
     const formData = new FormData();
     formData.append('name', product.name);
     formData.append('price', product.price);
+    formData.append('stock', product.stock);
     formData.append('description', product.description);
     formData.append('category', product.category);
     formData.append('unit', product.unit);
@@ -189,6 +193,22 @@ export default function AddProduct() {
                 placeholder="0.00"
               />
               {errors.price && <p className={styles.errorText}>{errors.price}</p>}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Stock Quantity</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                className={`${styles.input} ${errors.stock ? styles.inputError : ''}`}
+                value={product.stock}
+                onChange={(e) =>
+                  setProduct({ ...product, stock: e.target.value })
+                }
+                placeholder="0"
+              />
+              {errors.stock && <p className={styles.errorText}>{errors.stock}</p>}
             </div>
 
             <div className={styles.inputGroupFull}>

@@ -4,16 +4,27 @@ const fs = require('fs');
 const path = require('path');
 const { adminPaymentNumber } = require('../config/payment');
 
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    const relativePath = imagePath.replace(/^[/\\]+/, '');
+    if (!fs.existsSync(path.join(__dirname, '..', relativePath))) return null;
+    return `http://localhost:5000${imagePath}`;
+};
+
 // ── Get all products (with optional category filter & unit) ──
 exports.getProducts = async (req, res) => {
     try {
         const { category } = req.query;
         let sql = `
-            SELECT p.id, p.name, p.price, p.description, p.image_url, p.category, p.unit,
-                   p.stock, p.status, p.seller_id, u.name AS seller_name
+                 SELECT p.id, p.name, p.price, p.description, p.image_url, p.category, p.unit,
+                     p.stock, p.status, p.seller_id, u.name AS seller_name,
+                     COALESCE(AVG(r.rating), 0) AS rating,
+                     COUNT(r.id) AS review_count
             FROM products p
             LEFT JOIN users u ON u.id = p.seller_id
+                 LEFT JOIN reviews r ON r.product_id = p.id
             WHERE p.deleted_at IS NULL AND (p.status = 'active' OR p.status IS NULL)
+                 GROUP BY p.id, u.name
         `;
         const params = [];
         if (category) {
@@ -23,7 +34,7 @@ exports.getProducts = async (req, res) => {
         const [products] = await db.execute(sql, params);
         const formattedProducts = products.map(p => ({
             ...p,
-            imageUrl: p.image_url ? `http://localhost:5000${p.image_url}` : null
+            imageUrl: getImageUrl(p.image_url)
         }));
         res.json(formattedProducts);
     } catch (err) {
@@ -67,7 +78,9 @@ exports.getProductById = async (req, res) => {
                 p.unit,
                 p.seller_id,
                 u.name AS seller_name,
-                u.phone AS seller_phone
+                     u.phone AS seller_phone,
+                     (SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE product_id = p.id) AS rating,
+                     (SELECT COUNT(*) FROM reviews WHERE product_id = p.id) AS review_count
              FROM products p
              LEFT JOIN users u ON p.seller_id = u.id
              WHERE p.id = ? AND p.deleted_at IS NULL`,
@@ -77,7 +90,7 @@ exports.getProductById = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
         const product = rows[0];
-        product.imageUrl = product.image_url ? `http://localhost:5000${product.image_url}` : null;
+        product.imageUrl = getImageUrl(product.image_url);
         delete product.image_url; // clean response
         res.json(product);
     } catch (err) {
@@ -180,7 +193,7 @@ exports.getOrders = async (req, res) => {
                 name: item.product_name,
                 quantity: item.quantity,
                 price: item.price,
-                imageUrl: item.image_url ? `http://localhost:5000${item.image_url}` : null,
+                imageUrl: getImageUrl(item.image_url),
             });
         });
         const result = orders.map(order => ({
@@ -276,6 +289,36 @@ exports.createOrder = async (req, res) => {
             error: err.message,
             stack: err.stack
         });
+    }
+};
+
+// ── Cancel a buyer order before dispatch ──
+exports.cancelOrder = async (req, res) => {
+    try {
+        const buyerId = req.userId;
+        const { id } = req.params;
+        const [result] = await db.execute(
+            `UPDATE orders SET status = 'cancelled'
+             WHERE id = ? AND buyer_id = ? AND status IN ('pending', 'processing')`,
+            [id, buyerId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({
+                message: 'This order cannot be cancelled or was not found.'
+            });
+        }
+
+        await db.execute(
+            `INSERT INTO tracking_events (order_id, status, notes)
+             VALUES (?, 'cancelled', 'Order cancelled by buyer')`,
+            [id]
+        );
+
+        res.json({ success: true, message: 'Order cancelled successfully' });
+    } catch (err) {
+        console.error('Cancel order error:', err);
+        res.status(500).json({ message: 'Failed to cancel order' });
     }
 };
 

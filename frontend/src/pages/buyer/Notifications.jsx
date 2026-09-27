@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
 import BuyerLayout from './BuyerLayout';
 import api from '../../services/api';
+import { useUser } from '../../context/UserContext';
 import styles from './Notifications.module.css';
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user, loading: userLoading } = useUser();
 
   useEffect(() => {
+    if (userLoading) return undefined;
+    if (!user) {
+      setNotifications([]);
+      setLoading(false);
+      return undefined;
+    }
     const fetchNotifications = async () => {
       try {
         const res = await api.get('/buyer/notifications');
-        setNotifications(res.data);
+        const notificationData = res.data?.notifications || res.data || [];
+        setNotifications(Array.isArray(notificationData) ? notificationData : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -19,7 +28,7 @@ export default function Notifications() {
       }
     };
     fetchNotifications();
-  }, []);
+  }, [user, userLoading]);
 
   const markAsRead = async (id) => {
     try {

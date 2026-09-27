@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { HiEye, HiEyeOff, HiLockClosed, HiMail } from 'react-icons/hi';
 import { useUser } from '../../context/UserContext';
+import api from '../../services/api';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -10,7 +10,10 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationMessage, setVerificationMessage] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAuthenticatedUser } = useUser();
 
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -47,7 +50,7 @@ export default function Login() {
       console.log('Attempting login for:', email);
       
       // First try regular login (for buyers, sellers, admins)
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await api.post('/auth/login', {
         email,
         password,
       });
@@ -72,13 +75,17 @@ export default function Login() {
 
     } catch (err) {
       console.error('Login error:', err.response?.data || err.message);
+      if (err.response?.data?.requiresVerification) {
+        setVerificationEmail(email);
+        setVerificationMessage('Your email is not verified. Send a new verification code to continue.');
+      }
       
       // If regular login fails, try agent login
       if (err.response?.status === 401 || err.response?.status === 400) {
         try {
           console.log('Trying agent login...');
           
-          const agentRes = await axios.post('http://localhost:5000/api/auth/agent/login', {
+          const agentRes = await api.post('/auth/agent/login', {
             email,
             password,
           });
@@ -134,6 +141,19 @@ export default function Login() {
     }
   };
 
+  const resendVerification = async () => {
+    setLoading(true);
+    setErrors({});
+    try {
+      const response = await api.post('/auth/resend-verification', { email: verificationEmail });
+      setVerificationMessage(response.data.message);
+    } catch (err) {
+      setErrors({ general: err.response?.data?.message || 'Could not resend the verification code.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Role-based redirection function
   const redirectUser = (role) => {
     const roleLower = role.toLowerCase();
@@ -146,7 +166,11 @@ export default function Login() {
       'buyer': '/buyer/home'
     };
 
-    const route = roleRoutes[roleLower] || '/dashboard';
+    const requestedPath = location.state?.from?.pathname;
+    const requestedSearch = location.state?.from?.search || '';
+    const route = roleLower === 'buyer' && requestedPath?.startsWith('/buyer/')
+      ? `${requestedPath}${requestedSearch}`
+      : roleRoutes[roleLower] || '/dashboard';
     console.log('Navigating to:', route);
     navigate(route);
   };
@@ -158,6 +182,14 @@ export default function Login() {
           <h2 className={styles.title}>Sign In</h2>
           <p className={styles.subtitle}>Welcome back to GengeSmart</p>
           {errors.general && <div className={styles.errorBanner}>{errors.general}</div>}
+          {verificationEmail && (
+            <div className={styles.errorBanner}>
+              {verificationMessage}
+              <button type="button" onClick={resendVerification} disabled={loading} className={styles.link}>
+                Send verification code
+              </button>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} autoComplete="off">

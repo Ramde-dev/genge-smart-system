@@ -148,6 +148,7 @@ export default function Orders() {
                           className={`${styles.statusSelect} ${getStatusColor(o.status)}`}
                         >
                           <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
                           <option value="shipped">Shipped</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>

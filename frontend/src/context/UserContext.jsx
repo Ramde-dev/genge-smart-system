@@ -18,9 +18,9 @@ export const UserProvider = ({ children }) => {
       return;
     }
     api
-      .get('/buyer/profile')
+      .get('/auth/profile')
       .then((res) => {
-        setUser(res.data);
+        setUser(res.data.user || res.data);
       })
       .catch(() => {
         setUser(null);

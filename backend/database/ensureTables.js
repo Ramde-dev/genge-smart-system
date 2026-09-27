@@ -1,5 +1,25 @@
 const pool = require('../config/db');
 
+async function ensureUserVerificationColumns() {
+    const [columns] = await pool.query('SHOW COLUMNS FROM users');
+    const columnNames = new Set(columns.map((column) => column.Field));
+    if (!columnNames.has('email_verified')) {
+        await pool.query(`ALTER TABLE users ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT TRUE`);
+    }
+    if (!columnNames.has('verification_code_hash')) {
+        await pool.query(`ALTER TABLE users ADD COLUMN verification_code_hash CHAR(64) NULL`);
+    }
+    if (!columnNames.has('verification_expires_at')) {
+        await pool.query(`ALTER TABLE users ADD COLUMN verification_expires_at DATETIME NULL`);
+    }
+    if (!columnNames.has('reset_code_hash')) {
+        await pool.query(`ALTER TABLE users ADD COLUMN reset_code_hash CHAR(64) NULL`);
+    }
+    if (!columnNames.has('reset_code_expires_at')) {
+        await pool.query(`ALTER TABLE users ADD COLUMN reset_code_expires_at DATETIME NULL`);
+    }
+}
+
 async function migrateLegacyPayments() {
     const [columns] = await pool.query('SHOW COLUMNS FROM payments');
     const columnNames = new Set(columns.map((column) => column.Field));
@@ -28,6 +48,7 @@ async function migrateLegacyPayments() {
 }
 
 async function ensureTables() {
+    await ensureUserVerificationColumns();
     await pool.query(`
         CREATE TABLE IF NOT EXISTS conversations (
             id INT AUTO_INCREMENT PRIMARY KEY,

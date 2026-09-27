@@ -9,9 +9,10 @@ import styles from './Home.module.css';
 export default function Home() {
   const location = useLocation();
   const landingState = location.state || {};
+  const queryParams = new URLSearchParams(location.search);
   const [products, setProducts] = useState([]);
-  const [activeTab, setActiveTab] = useState(landingState.category || 'All');
-  const [searchTerm, setSearchTerm] = useState(landingState.search || '');
+  const [activeTab, setActiveTab] = useState(landingState.category || queryParams.get('category') || 'All');
+  const [searchTerm, setSearchTerm] = useState(landingState.search || queryParams.get('search') || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [welcomeText, setWelcomeText] = useState('');
@@ -150,14 +151,14 @@ export default function Home() {
                 <Link to={`/buyer/product/${p.id}`} className={styles.cardLink}>
                   <div className={styles.cardImage}>
                     <img
-                      src={p.imageUrl || '/images/placeholder.png'}
+                      src={p.imageUrl || '/placeholder.svg'}
                       alt={p.name}
-                      onError={(e) => { e.target.src = '/images/placeholder.png'; }}
+                      onError={(e) => { e.target.src = '/placeholder.svg'; }}
                     />
                     <div className={styles.cardBadge}>NEW</div>
-                    {p.rating && (
+                    {Number(p.review_count) > 0 && (
                       <div className={styles.cardRating}>
-                        <FaStar /> {p.rating}
+                        <FaStar /> {Number(p.rating).toFixed(1)}
                       </div>
                     )}
                   </div>

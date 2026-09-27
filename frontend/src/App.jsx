@@ -96,9 +96,13 @@ function App() {
               <Route path="/buyer/profile" element={<BuyerProfile />} />
               <Route path="/buyer/orders" element={<BuyerOrders />} />
               <Route path="/buyer/addresses" element={<BuyerAddresses />} />
-              <Route path="/buyer/checkout" element={<BuyerCheckout />} />
               <Route path="/buyer/tracking" element={<BuyerTracking />} />
               <Route path="/buyer/notifications" element={<BuyerNotifications />} />
+            </Route>
+
+            {/* Checkout requires a registered buyer account. */}
+            <Route element={<ProtectedRoute roleRequired="buyer" unauthenticatedPath="/register" />}>
+              <Route path="/buyer/checkout" element={<BuyerCheckout />} />
             </Route>
 
             {/* Protected Admin Routes */}

@@ -521,11 +521,11 @@ exports.addAgent = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert into users table with role 'agent'
-        const [userResult] = await pool.query(
-            `INSERT INTO users 
-            (name, email, password, role, status, phone, address, shopName, bio) 
-            VALUES (?, ?, ?, 'agent', 'active', ?, ?, ?, ?)`,
-            [name, email, hashedPassword, phone || null, address || null, shopName || null, bio || null]
+            const [userResult] = await pool.query(
+                `INSERT INTO users
+                (name, email, password, role, status, phone, address, shopName, bio, email_verified)
+                VALUES (?, ?, ?, 'agent', 'active', ?, ?, ?, ?, TRUE)`,
+                [name, email, hashedPassword, phone || null, address || null, shopName || null, bio || null]
         );
 
         const userId = userResult.insertId;

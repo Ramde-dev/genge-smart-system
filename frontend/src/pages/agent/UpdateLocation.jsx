@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
+import AgentLayout from '../../components/agent/AgentLayout';
 import { 
   HiOutlineLocationMarker, 
   HiOutlineRefresh, 
@@ -220,8 +221,9 @@ export default function UpdateLocation() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
+    <AgentLayout>
+      <div className={styles.container}>
+        <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.title}>
             <HiOutlineLocationMarker className={styles.titleIcon} />
@@ -416,7 +418,8 @@ export default function UpdateLocation() {
             Make sure GPS is enabled for accurate tracking.
           </span>
         </div>
+        </div>
       </div>
-    </div>
+    </AgentLayout>
   );
 }

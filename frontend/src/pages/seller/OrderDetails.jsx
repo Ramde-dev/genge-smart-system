@@ -60,7 +60,7 @@ export default function OrderDetails() {
           estimated_delivery: orderData.estimated_delivery
             ? new Date(orderData.estimated_delivery).toISOString().split('T')[0]
             : '',
-          events: orderData.tracking_events || [],
+          events: orderData.tracking_events || data.tracking_events || [],
         });
       }
     } catch (error) {

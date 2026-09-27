@@ -62,7 +62,7 @@ export default function ProductDetails() {
     }
   };
 
-  const renderStars = (rating = 4.5) => {
+  const renderStars = (rating = 0) => {
     const full = Math.floor(rating);
     const half = rating - full >= 0.5 ? 1 : 0;
     const stars = [];
@@ -118,9 +118,9 @@ export default function ProductDetails() {
           <div className={styles.imageSection}>
             <div className={styles.mainImage}>
               <img
-                src={product.imageUrl || '/images/placeholder.png'}
+                src={product.imageUrl || '/placeholder.svg'}
                 alt={product.name}
-                onError={(e) => (e.target.src = '/images/placeholder.png')}
+                onError={(e) => (e.target.src = '/placeholder.svg')}
               />
             </div>
           </div>
@@ -130,8 +130,14 @@ export default function ProductDetails() {
             <h1 className={styles.productName}>{product.name}</h1>
 
             <div className={styles.rating}>
-              <span className={styles.stars}>{renderStars(4.5)}</span>
-              <span className={styles.reviewCount}>(124 reviews)</span>
+              {Number(product.review_count) > 0 ? (
+                <>
+                  <span className={styles.stars}>{renderStars(Number(product.rating))}</span>
+                  <span className={styles.reviewCount}>({product.review_count} reviews)</span>
+                </>
+              ) : (
+                <span className={styles.reviewCount}>No reviews yet</span>
+              )}
             </div>
 
             <div className={styles.price}>{formatPrice(product)}</div>
@@ -187,9 +193,9 @@ export default function ProductDetails() {
                 <div key={p.id} className={styles.relatedCard}>
                   <Link to={`/buyer/product/${p.id}`} className={styles.relatedLinkWrapper}>
                     <img
-                      src={p.imageUrl || '/images/placeholder.png'}
+                      src={p.imageUrl || '/placeholder.svg'}
                       alt={p.name}
-                      onError={(e) => (e.target.src = '/images/placeholder.png')}
+                      onError={(e) => (e.target.src = '/placeholder.svg')}
                     />
                     <div className={styles.relatedInfo}>
                       <h4>{p.name}</h4>

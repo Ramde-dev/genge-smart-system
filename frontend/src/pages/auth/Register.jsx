@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { HiEye, HiEyeOff, HiLockClosed, HiMail, HiPhone, HiUser, HiCheck } from 'react-icons/hi';
 import styles from './Register.module.css';
+import api from '../../services/api';
 
 export default function Register() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'Buyer' });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
   const navigate = useNavigate();
 
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -46,13 +50,14 @@ export default function Register() {
     setErrors({});
     
     try {
-      await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await api.post('/auth/register', {
         ...formData,
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password.trim(),
       });
-      navigate('/login');
+      setVerificationRequired(response.data.requiresVerification);
+      setVerificationMessage(response.data.message || 'Check your email for a verification code.');
     } catch (err) {
       if (err.response?.data?.errors) {
         const validationErrors = {};
@@ -63,6 +68,39 @@ export default function Register() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setVerificationLoading(true);
+    setErrors({});
+    try {
+      const response = await api.post('/auth/verify-email', {
+        email: formData.email.trim().toLowerCase(),
+        code: verificationCode.trim(),
+      });
+      setVerificationMessage(response.data.message);
+      setTimeout(() => navigate('/login'), 900);
+    } catch (err) {
+      setErrors({ general: err.response?.data?.message || 'Invalid verification code.' });
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  const resendCode = async () => {
+    setVerificationLoading(true);
+    setErrors({});
+    try {
+      const response = await api.post('/auth/resend-verification', {
+        email: formData.email.trim().toLowerCase(),
+      });
+      setVerificationMessage(response.data.message);
+    } catch (err) {
+      setErrors({ general: err.response?.data?.message || 'Could not resend the code.' });
+    } finally {
+      setVerificationLoading(false);
     }
   };
 
@@ -78,6 +116,31 @@ export default function Register() {
           {errors.general && <div className={styles.errorBanner}>{errors.general}</div>}
         </div>
 
+        {verificationRequired ? (
+          <form onSubmit={handleVerify} noValidate>
+            <p>{verificationMessage}</p>
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Email Verification Code</label>
+              <input
+                className={styles.input}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="Enter 6-digit code"
+                disabled={verificationLoading}
+                required
+              />
+            </div>
+            <button type="submit" className={styles.submitBtn} disabled={verificationLoading || verificationCode.length !== 6}>
+              {verificationLoading ? 'VERIFYING...' : 'Verify Email'}
+            </button>
+            <button type="button" className={styles.link} onClick={resendCode} disabled={verificationLoading}>
+              Resend code
+            </button>
+          </form>
+        ) : <>
         {/* Role Toggle – only Buyer and Seller (Admin is created manually for security) */}
         <div className={styles.roleToggle}>
           {['Buyer', 'Seller'].map((role) => (
@@ -191,6 +254,7 @@ export default function Register() {
             {loading ? <span className={styles.spinner} /> : 'Sign Up'}
           </button>
         </form>
+        </>}
 
         <div className={styles.footer}>
           Already have an account? <Link to="/login" className={styles.link}>Sign In</Link>

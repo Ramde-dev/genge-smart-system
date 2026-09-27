@@ -27,6 +27,7 @@ export default function EditProduct() {
   const [product, setProduct] = useState({
     name: '',
     price: '',
+    stock: '',
     description: '',
     category: 'Vegetables',
     unit: 'Piece',
@@ -58,6 +59,10 @@ export default function EditProduct() {
     else if (product.name.trim().length < 2) nextErrors.name = 'Product name must be at least 2 characters';
 
     if (!product.price || Number(product.price) <= 0) nextErrors.price = 'Enter a valid price';
+
+    if (product.stock === '' || Number(product.stock) < 0 || !Number.isInteger(Number(product.stock))) {
+      nextErrors.stock = 'Enter a valid stock quantity';
+    }
 
     if (!product.description.trim()) nextErrors.description = 'Description is required';
     else if (product.description.trim().length < 10) nextErrors.description = 'Description must be at least 10 characters';
@@ -103,6 +108,7 @@ export default function EditProduct() {
     const formData = new FormData();
     formData.append('name', product.name);
     formData.append('price', product.price);
+    formData.append('stock', product.stock);
     formData.append('description', product.description);
     formData.append('category', product.category);
     formData.append('unit', product.unit);
@@ -250,6 +256,20 @@ export default function EditProduct() {
                 required
               />
               {errors.price && <p className={styles.errorText}>{errors.price}</p>}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Stock Quantity</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                className={`${styles.input} ${errors.stock ? styles.inputError : ''}`}
+                value={product.stock}
+                onChange={(e) => setProduct({ ...product, stock: e.target.value })}
+                placeholder="0"
+              />
+              {errors.stock && <p className={styles.errorText}>{errors.stock}</p>}
             </div>
 
             <div className={styles.inputGroupFull}>

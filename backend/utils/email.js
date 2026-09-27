@@ -45,4 +45,32 @@ const sendNotificationEmail = async (email, title, message, link = null) => {
   }
 };
 
-module.exports = { sendStatusUpdateEmail, sendNotificationEmail };
+const sendVerificationCodeEmail = async (email, code) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error('Email service is not configured');
+  }
+
+  await transporter.sendMail({
+    from: `"Genge Smart System" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Verify your GengeSmart email',
+    text: `Your GengeSmart verification code is ${code}. It expires in 10 minutes.`,
+    html: `<h2>Verify your email</h2><p>Your GengeSmart verification code is <strong>${code}</strong>.</p><p>This code expires in 10 minutes.</p>`
+  });
+};
+
+const sendPasswordResetCodeEmail = async (email, code) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error('Email service is not configured');
+  }
+
+  await transporter.sendMail({
+    from: `"Genge Smart System" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Your GengeSmart password reset code',
+    text: `Your GengeSmart password reset code is ${code}. It expires in 10 minutes.`,
+    html: `<h2>Reset your password</h2><p>Your password reset code is <strong>${code}</strong>.</p><p>This code expires in 10 minutes.</p>`
+  });
+};
+
+module.exports = { sendStatusUpdateEmail, sendNotificationEmail, sendVerificationCodeEmail, sendPasswordResetCodeEmail };

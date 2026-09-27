@@ -1,10 +1,25 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { sendVerificationCodeEmail, sendPasswordResetCodeEmail } = require('../utils/email');
+
+const createVerificationCode = () => String(crypto.randomInt(100000, 1000000));
+const hashVerificationCode = (code) => crypto.createHash('sha256').update(code).digest('hex');
+
+const sendVerificationCode = async (userId, email) => {
+    const code = createVerificationCode();
+    await sendVerificationCodeEmail(email, code);
+    await pool.query(
+        `UPDATE users SET verification_code_hash = ?, verification_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?`,
+        [hashVerificationCode(code), userId]
+    );
+};
 
 // ── Register a new user ──
 exports.register = async (req, res) => {
-    const { name, email, password, role, phone } = req.body;
+    const { name, password, role, phone } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
 
     try {
         // Validate input
@@ -27,7 +42,7 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         // Normalize roles to lower-case values supported by the enum
         let userRole = (role || 'buyer').toString().toLowerCase();
-        if (!['buyer', 'seller', 'admin', 'agent'].includes(userRole)) {
+        if (!['buyer', 'seller'].includes(userRole)) {
             userRole = 'buyer';
         }
         if (userRole === 'seller' && (!phone || !phone.trim())) {
@@ -37,15 +52,21 @@ exports.register = async (req, res) => {
             });
         }
 
-        // Insert user with status 'active' by default
+        const verificationCode = createVerificationCode();
+        await sendVerificationCodeEmail(email, verificationCode);
+
         await pool.query(
-            'INSERT INTO users (name, email, password, role, phone, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, hashedPassword, userRole, phone?.trim() || null, 'active']
+            `INSERT INTO users
+             (name, email, password, role, phone, status, email_verified, verification_code_hash, verification_expires_at)
+             VALUES (?, ?, ?, ?, ?, 'active', FALSE, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))`,
+            [name, email, hashedPassword, userRole, phone?.trim() || null, hashVerificationCode(verificationCode)]
         );
 
         res.status(201).json({ 
             success: true,
-            message: 'User registered successfully',
+            message: 'Verification code sent to your email',
+            requiresVerification: true,
+            email,
             role: userRole
         });
     } catch (err) {
@@ -60,7 +81,8 @@ exports.register = async (req, res) => {
 
 // ── Login user (for all roles: buyer, seller, admin) ──
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const { password } = req.body;
 
     try {
         // Validate input
@@ -82,6 +104,14 @@ exports.login = async (req, res) => {
         }
 
         const user = rows[0];
+
+        if (user.role !== 'agent' && (user.email_verified === 0 || user.email_verified === false)) {
+            return res.status(403).json({
+                success: false,
+                requiresVerification: true,
+                message: 'Please verify your email before signing in.'
+            });
+        }
         
         // Check if account is active
         if (user.status && user.status !== 'active') {
@@ -236,11 +266,13 @@ exports.forgotPassword = async (req, res) => {
             });
         }
 
-        // TODO: Send reset email
-        res.json({ 
-            success: true,
-            message: 'If an account exists for that email, a reset link has been sent.' 
-        });
+        const code = createVerificationCode();
+        await sendPasswordResetCodeEmail(rows[0].email, code);
+        await pool.query(
+            `UPDATE users SET reset_code_hash = ?, reset_code_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?`,
+            [hashVerificationCode(code), rows[0].id]
+        );
+        res.json({ success: true, message: 'Password reset code sent to your email.' });
     } catch (err) {
         console.error('Forgot password error:', err);
         res.status(500).json({ 
@@ -491,5 +523,91 @@ exports.debugUser = async (req, res) => {
             message: 'Database error',
             error: err.message
         });
+    }
+};
+
+exports.verifyEmail = async (req, res) => {
+    const email = req.body.email.trim().toLowerCase();
+    const code = req.body.code.trim();
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, email_verified, verification_code_hash, verification_expires_at
+             FROM users WHERE email = ?`,
+            [email]
+        );
+        if (rows.length === 0) return res.status(400).json({ message: 'Invalid verification request.' });
+        const user = rows[0];
+        if (user.email_verified) return res.json({ success: true, message: 'Email is already verified.' });
+        if (!user.verification_code_hash || !user.verification_expires_at || new Date(user.verification_expires_at) < new Date()) {
+            return res.status(400).json({ message: 'This verification code has expired. Request a new one.' });
+        }
+        if (hashVerificationCode(code) !== user.verification_code_hash) {
+            return res.status(400).json({ message: 'Invalid verification code.' });
+        }
+        await pool.query(
+            `UPDATE users SET email_verified = TRUE, verification_code_hash = NULL, verification_expires_at = NULL WHERE id = ?`,
+            [user.id]
+        );
+        res.json({ success: true, message: 'Email verified successfully. You can now sign in.' });
+    } catch (err) {
+        console.error('Email verification error:', err);
+        res.status(500).json({ message: 'Failed to verify email.' });
+    }
+};
+
+exports.resendVerification = async (req, res) => {
+    const email = req.body.email.trim().toLowerCase();
+    try {
+        const [rows] = await pool.query('SELECT id, email, email_verified FROM users WHERE email = ?', [email]);
+        if (rows.length === 0 || rows[0].email_verified) {
+            return res.json({ success: true, message: 'If the account requires verification, a new code has been sent.' });
+        }
+        await sendVerificationCode(rows[0].id, rows[0].email);
+        res.json({ success: true, message: 'A new verification code has been sent.' });
+    } catch (err) {
+        console.error('Resend verification error:', err);
+        res.status(500).json({ message: 'Could not send a new verification code.' });
+    }
+};
+
+const findValidResetCode = async (email, code) => {
+    const [rows] = await pool.query(
+        `SELECT id, reset_code_hash, reset_code_expires_at FROM users WHERE email = ?`,
+        [email]
+    );
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    if (!user.reset_code_hash || !user.reset_code_expires_at || new Date(user.reset_code_expires_at) < new Date()) return null;
+    return hashVerificationCode(code) === user.reset_code_hash ? user : null;
+};
+
+exports.verifyResetCode = async (req, res) => {
+    const email = req.body.email.trim().toLowerCase();
+    const code = req.body.code.trim();
+    try {
+        const user = await findValidResetCode(email, code);
+        if (!user) return res.status(400).json({ message: 'Invalid or expired reset code.' });
+        res.json({ success: true, message: 'Code verified. You can now set a new password.' });
+    } catch (err) {
+        console.error('Verify reset code error:', err);
+        res.status(500).json({ message: 'Failed to verify reset code.' });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const email = req.body.email.trim().toLowerCase();
+    const code = req.body.code.trim();
+    try {
+        const user = await findValidResetCode(email, code);
+        if (!user) return res.status(400).json({ message: 'Invalid or expired reset code.' });
+        const passwordHash = await bcrypt.hash(req.body.password, 10);
+        await pool.query(
+            `UPDATE users SET password = ?, reset_code_hash = NULL, reset_code_expires_at = NULL WHERE id = ?`,
+            [passwordHash, user.id]
+        );
+        res.json({ success: true, message: 'Password reset successfully. You can now sign in.' });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({ message: 'Failed to reset password.' });
     }
 };
